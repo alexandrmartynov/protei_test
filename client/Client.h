@@ -13,7 +13,6 @@ public:
 private:
     int setSocket();
     void writeServerAddress();
-    char* getMessage() const;
 
     sockaddr_in m_server_addr;
     int m_socket;

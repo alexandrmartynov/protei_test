@@ -61,7 +61,7 @@ int Client::run()
                 {
                     while(true)
                     {
-                        char* message = getMessage();
+                        char* message = m_service.getMessage();
                         m_service.send_udp(m_socket, message, &m_server_addr, server_addrlen);
                         char* outputMessage = m_service.receive_udp(m_socket, &m_server_addr, &server_addrlen);
                         std::cout << "Output message: " << outputMessage << "\n";
@@ -74,7 +74,7 @@ int Client::run()
                 {
                     while(true)
                     {
-                        char* message = getMessage();
+                        char* message = m_service.getMessage();
                         m_service.send_tcp(m_socket, message);
                         char* outputMessage = m_service.receive_tcp(m_socket);
                         std::cout << "Output message: " << outputMessage << "\n";
@@ -133,91 +133,4 @@ void Client::writeServerAddress()
         std::cout << "inet_aton() failed with " << strerror(errno) << "\n";
         return;
     }
-}
-
-/*void Client::send_udp(char* message)
-{
-    char* buffer = message;
-    size_t bytes = strlen(message);
-    size_t bytesToWrite = bytes;
-    char* currentBufferPosition = buffer;
-    socklen_t server_addrlen = sizeof(m_server_addr);
-    while(bytesToWrite > 0)
-    {
-        size_t bytesWritten = sendto(
-                                     m_socket,
-                                     (void*)currentBufferPosition,
-                                     bytesToWrite,
-                                     0,
-                                     (sockaddr *) &m_server_addr,
-                                     server_addrlen
-                                    );
-        if(bytesWritten <= bytesToWrite)
-        {
-            bytesToWrite -= bytesWritten;
-            currentBufferPosition += bytesWritten;
-        }
-    }  
-}
-
-void Client::send_tcp(char* message)
-{
-    char* buffer = message;
-    size_t bytes = strlen(message);
-    size_t bytesToWrite = bytes;
-    char* currentBufferPosition = buffer;
-    while(bytesToWrite > 0)
-    {
-        size_t bytesWritten = write(
-                                   m_socket,
-                                   (void*)currentBufferPosition,
-                                   bytesToWrite);
-        if(bytesWritten <= bytesToWrite)
-        {
-            bytesToWrite -= bytesWritten;
-            currentBufferPosition += bytesWritten;
-        }
-    }    
-}
-
-char* Client::receive_udp()
-{
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-    socklen_t server_addrlen = sizeof(m_server_addr);
-    size_t bytes = recvfrom(m_socket, (void*)buffer, BUFFER_SIZE, 0, (sockaddr *) &m_server_addr, &server_addrlen);
-    if(bytes > 0)
-    {
-        buffer[bytes] = '\0';
-    }
-    else
-    {
-        buffer = nullptr;
-    }
-    return buffer;
-}
-
-char* Client::receive_tcp()
-{
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-    size_t bytes = read(m_socket, (void*)buffer, BUFFER_SIZE);
-    if(bytes > 0)
-    {
-        buffer[bytes] = '\0';
-    }
-    else
-    {
-        buffer = nullptr;
-    }
-    return buffer;
-}*/
-
-char* Client::getMessage() const
-{
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-    std::cout << "Write message: ";
-    std::cin >> buffer;
-    return buffer;
 }

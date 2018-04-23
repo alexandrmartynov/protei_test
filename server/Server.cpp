@@ -74,9 +74,8 @@ int Server::run()
                             status = EXIT_FAILURE;
                             break;
                         }
-
-                        std::cout << message;
                         m_service.send_udp(m_client_socket, message, &m_client_addr, client_addrlen);
+
                         memset(message, 0, sizeof(message));
                         delete[] message;
                         message = nullptr;
@@ -108,6 +107,7 @@ int Server::run()
                                     break;
                                 }
                                 m_service.send_tcp(m_client_socket, message);
+
                                 memset(message, 0, sizeof(message));
                                 delete[] message;
                                 message = nullptr;
@@ -175,84 +175,6 @@ int Server::connectClient()
     return status;
 
 }
-
-/*void Server::send_udp(char* message)
-{
-    char* buffer = message;
-    size_t bytes = strlen(message);
-    size_t bytesToWrite = bytes;
-    char* currentBufferPosition = buffer;
-    socklen_t client_addrlen = sizeof(m_client_addr);
-    while(bytesToWrite > 0)
-    {
-        size_t bytesWritten = sendto(
-                                     m_socket,
-                                     (void*)currentBufferPosition,
-                                     bytesToWrite,
-                                     0,
-                                     (sockaddr *) &m_client_addr,
-                                     client_addrlen
-                                    );
-        if(bytesWritten <= bytesToWrite)
-        {
-            bytesToWrite -= bytesWritten;
-            currentBufferPosition += bytesWritten;
-        }
-    }  
-}
-
-void Server::send_tcp(char* message)
-{
-    char* buffer = message;;
-    size_t bytes = strlen(message);
-    size_t bytesToWrite = bytes;
-    char* currentBufferPosition = buffer;
-    while(bytesToWrite > 0)
-    {
-        size_t bytesWritten = write(
-                                   m_client_socket,
-                                   (void*)currentBufferPosition,
-                                   bytesToWrite);
-        if(bytesWritten <= bytesToWrite)
-        {
-            bytesToWrite -= bytesWritten;
-            currentBufferPosition += bytesWritten;
-        }
-    }    
-}
-
-char* Server::receive_udp()
-{
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-    socklen_t client_addrlen = sizeof(m_client_addr);
-    size_t bytes = recvfrom(m_socket, (void*)buffer, BUFFER_SIZE, 0, (sockaddr *) &m_client_addr, &client_addrlen);
-    if(bytes > 0)
-    {
-        buffer[bytes] = '\0';
-    }
-    else
-    {
-        buffer = nullptr;
-    }
-    return buffer;
-}
-
-char* Server::receive_tcp()
-{
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-    size_t bytes = read(m_client_socket, (void*)buffer, BUFFER_SIZE);
-    if(bytes > 0)
-    {
-        buffer[bytes] = '\0';
-    }
-    else
-    {
-        buffer = nullptr;
-    }
-    return buffer;
-}*/
 
 void Server::calculate(char* buffer) const
 {

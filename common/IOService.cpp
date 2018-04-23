@@ -46,7 +46,7 @@ void IOService::send_udp(int socket, char* message, sockaddr_in* addr, socklen_t
                                      (void*)currentBufferPosition,
                                      bytesToWrite,
                                      0,
-                                     (sockaddr *) &addr,
+                                     (sockaddr *) addr,
                                      addrlen
                                     );
         if(bytesWritten <= bytesToWrite)
@@ -77,7 +77,7 @@ char* IOService::receive_udp(int socket, sockaddr_in* addr, socklen_t* addrlen) 
 {
     char* buffer = new char[BUFFER_SIZE];
     memset(buffer, 0, BUFFER_SIZE);
-    size_t bytes = recvfrom(socket, (void*)buffer, BUFFER_SIZE, 0, (sockaddr *) &addr, addrlen);
+    size_t bytes = recvfrom(socket, (void*)buffer, BUFFER_SIZE, 0, (sockaddr *) addr, addrlen);
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
@@ -86,6 +86,15 @@ char* IOService::receive_udp(int socket, sockaddr_in* addr, socklen_t* addrlen) 
     {
         buffer = nullptr;
     }
+    return buffer;
+}
+
+char* IOService::getMessage() const
+{
+    char* buffer = new char[BUFFER_SIZE];
+    memset(buffer, 0, BUFFER_SIZE);
+    std::cout << "Write message: ";
+    std::cin >> buffer;
     return buffer;
 }
 

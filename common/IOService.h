@@ -12,6 +12,7 @@ public:
     char* receive_tcp(int socket) const;
     char* receive_udp(int socket, sockaddr_in* addr, socklen_t* addrlen) const;
     char* numToStr(int number, size_t size) const;
+    char* getMessage() const;
 private:
 
 };
