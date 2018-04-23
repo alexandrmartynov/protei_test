@@ -1,0 +1,11 @@
+*.o
+**/.obj
+**/bin
+/bin
+Makefile
+**/Makefile
+*.Debug
+*.Release
+/build
+**/build
+*.user
