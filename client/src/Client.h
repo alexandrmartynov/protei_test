@@ -1,29 +1,27 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
-#include "netinet/in.h"
+#include <netinet/in.h>
 
-class Server
+class Client
 {
 public:
-    Server();
+    Client();
     int run();
     void setProtocolType(int protocol);
 private:
-    void setSocket();
+    int setSocket();
     void writeServerAddress();
-    int connectClient();
     void send_tcp(char* message);
     void send_udp(char* message);
     char* receive_tcp();
     char* receive_udp();
-    void calculate(char* message) const;
+    char* getMessage() const;
 
     sockaddr_in m_server_addr;
-    sockaddr_in m_client_addr;
-    int m_protocol;
     int m_socket;
     int m_client_socket;
+    int m_protocol;
 };
 
 #endif

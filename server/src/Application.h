@@ -11,7 +11,6 @@ public:
     int exec();
 private:
     int getProtocolType() const;
-
     Server* m_server;
 };
 

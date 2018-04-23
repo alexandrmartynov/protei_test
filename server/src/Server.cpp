@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <algorithm>
+#include <list>
 
 #include "Server.h"
 #include "Protocol.h"
@@ -15,6 +17,11 @@
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
+Server::Server():
+    m_socket(0),
+    m_protocol(0),
+    m_client_socket(0)
+{}
 
 int Server::run()
 {
@@ -48,78 +55,76 @@ int Server::run()
                 }
             }
 
-            int client_socket = 0;
             socklen_t client_addrlen = sizeof(m_client_addr);
             char* buffer = new char[BUFFER_SIZE];
-            while(true)
+
+            switch(m_protocol)
             {
-                switch(m_protocol)
+                case UDP:
                 {
-                    case UDP:
+                    m_client_socket = m_socket;
+                    
+                    while(true)
                     {
-                        client_socket = m_socket;
-                        
-                        while(true)
+                        char* message = receive_udp();
+                        calculate(message);
+                        if(message == nullptr)
                         {
-                            int readed_bytes = recvfrom(client_socket, buffer, BUFFER_SIZE, 0, (sockaddr *) &m_client_addr, &client_addrlen);
-                            if(readed_bytes < 0)
-                            {
-                                std::cout << "Readed failed with error " << strerror(errno) << "\n";
-                                status = EXIT_FAILURE;
-                                break;
-                            }
-                            buffer[readed_bytes] = '\0';
-                            size_t bytesToWrite = strlen(buffer);
-                            int writed_bytes = sendto(client_socket, buffer, bytesToWrite, 0, (sockaddr *) &m_client_addr, client_addrlen);
-                            if(writed_bytes < 0)
-                            {
-                                std::cout << "Writed failed with error " << strerror(errno) << "\n";
-                                status = EXIT_FAILURE;
-                                break;
-                            }
+                            std::cout << "Readed failed with error " << strerror(errno) << "\n";
+                            status = EXIT_FAILURE;
+                            break;
                         }
-                        break;
+
+                        std::cout << message;
+                        send_udp(message);
+
                     }
-                    case TCP:
+                    break;
+                }
+                case TCP:
+                {
+                    while(true)
                     {
-                        while(true)
+                        socklen_t client_addrlen = sizeof(m_client_addr);
+                        m_client_socket = accept(m_socket, (sockaddr *) &m_client_addr, &client_addrlen);
+                        if(m_client_socket < 0)
                         {
-                            int readed_bytes = read(client_socket, (void *)buffer, BUFFER_SIZE);
-                            if(readed_bytes < 0)
-                            {
-                                std::cout << "Readed failed with error " << strerror(errno) << "\n";
-                                status = EXIT_FAILURE;
-                                break;
-                            }
-
-                            buffer[readed_bytes] = '\0';
-                            std::cout << buffer;
-                            char* message = buffer;
-                            size_t bytes = strlen(message);
-                            size_t bytesToWrite = bytes;
-                            char* currentMessagePosition = message;
-                            while(bytesToWrite > 0)
-                            {
-                                size_t bytesWritten = write(
-                                                           m_socket,
-                                                           (void*)currentMessagePosition,
-                                                           bytesToWrite);
-                                if(bytesWritten <= bytesToWrite)
-                                {
-                                    bytesToWrite -= bytesWritten;
-                                    currentMessagePosition += bytesWritten;
-                                }
-                            }
+                            std::cout << "Accept failed with error" << strerror(errno) << "\n";
+                            status = EXIT_FAILURE;
                         }
-
-                        break;
-
+                        else
+                        {
+                            std::cout << "Client connected with address " << m_client_addr.sin_addr.s_addr << "\n";
+                            while(true)
+                            {
+                                char* message = receive_tcp();
+                                calculate(message);
+                                if(message == nullptr)
+                                {
+                                    std::cout << "Readed failed with error " << strerror(errno) << "\n";
+                                    status = EXIT_FAILURE;
+                                    break;
+                                }
+                                send_tcp(message);
+                                memset(message, 0, sizeof(message));
+                                delete[] message;
+                                message = nullptr;
+                            }
+                            std::cout << "Client disconnected\n";
+                            close(m_client_socket);
+                        }
                     }
                 }
+                    break;
             }
-        }
 
-    }   
+            close(m_client_socket);
+
+        }
+    }
+
+    return status;
+ 
 }
 
 void Server::setProtocolType(int protocol)
@@ -153,3 +158,143 @@ void Server::writeServerAddress()
     m_server_addr.sin_addr.s_addr = INADDR_ANY;
     m_server_addr.sin_port = htons(PORT);
 }
+
+int Server::connectClient()
+{
+    int status = 0;
+    socklen_t client_addrlen = sizeof(m_client_addr);
+    m_client_socket = accept(m_socket, (sockaddr *) &m_client_addr, &client_addrlen);
+    if(m_client_socket < 0)
+    {
+        std::cout << "Accept failed with error" << strerror(errno) << "\n";
+        status = EXIT_FAILURE;
+    }
+    
+    return status;
+
+}
+
+void Server::send_udp(char* message)
+{
+    char* buffer = message;
+    size_t bytes = strlen(message);
+    size_t bytesToWrite = bytes;
+    char* currentBufferPosition = buffer;
+    socklen_t client_addrlen = sizeof(m_client_addr);
+    while(bytesToWrite > 0)
+    {
+        size_t bytesWritten = sendto(
+                                     m_socket,
+                                     (void*)currentBufferPosition,
+                                     bytesToWrite,
+                                     0,
+                                     (sockaddr *) &m_client_addr,
+                                     client_addrlen
+                                    );
+        if(bytesWritten <= bytesToWrite)
+        {
+            bytesToWrite -= bytesWritten;
+            currentBufferPosition += bytesWritten;
+        }
+    }  
+}
+
+void Server::send_tcp(char* message)
+{
+    char* buffer = message;;
+    size_t bytes = strlen(message);
+    size_t bytesToWrite = bytes;
+    char* currentBufferPosition = buffer;
+    while(bytesToWrite > 0)
+    {
+        size_t bytesWritten = write(
+                                   m_client_socket,
+                                   (void*)currentBufferPosition,
+                                   bytesToWrite);
+        if(bytesWritten <= bytesToWrite)
+        {
+            bytesToWrite -= bytesWritten;
+            currentBufferPosition += bytesWritten;
+        }
+    }    
+}
+
+char* Server::receive_udp()
+{
+    char* buffer = new char[BUFFER_SIZE];
+    memset(buffer, 0, BUFFER_SIZE);
+    socklen_t client_addrlen = sizeof(m_client_addr);
+    size_t bytes = recvfrom(m_socket, (void*)buffer, BUFFER_SIZE, 0, (sockaddr *) &m_client_addr, &client_addrlen);
+    if(bytes > 0)
+    {
+        buffer[bytes] = '\0';
+    }
+    else
+    {
+        buffer = nullptr;
+    }
+    return buffer;
+}
+
+char* Server::receive_tcp()
+{
+    char* buffer = new char[BUFFER_SIZE];
+    memset(buffer, 0, BUFFER_SIZE);
+    size_t bytes = read(m_client_socket, (void*)buffer, BUFFER_SIZE);
+    if(bytes > 0)
+    {
+        buffer[bytes] = '\0';
+    }
+    else
+    {
+        buffer = nullptr;
+    }
+    return buffer;
+}
+
+void Server::calculate(char* buffer) const
+{
+    std::list<int> numbers;
+    numbers.clear();
+    std::string input(buffer);
+    std::string::iterator parser = input.begin();
+    while(parser != input.end())
+    {
+        if(*parser >= '0' && *parser <= '9')
+        {
+            char temp = *parser;
+            int number = atoi(&temp);
+            numbers.push_back(number);
+        }
+
+        parser++;
+    }
+
+    std::list<int>::iterator current = numbers.begin();
+    while(current != numbers.end())
+    {
+        std::cout << *current << " ";
+        current++;
+    }
+    std::cout << "\n";
+
+    int sum_numbers = std::accumulate(numbers.begin(), numbers.end(), 0);
+
+    std::cout << "sum of numbers: " << sum_numbers << "\n";
+
+    numbers.sort();
+
+    std::list<int>::reverse_iterator current_reverse = numbers.rbegin();
+    while(current_reverse != numbers.rend())
+    {
+        std::cout << *current_reverse << " ";
+        current_reverse++;
+    }
+    std::cout << "\n";
+
+    auto minmax = std::minmax_element(numbers.begin(), numbers.end());
+    std::cout << "max: " << *minmax.first << "min: " << *minmax.second << "\n";
+
+}
+
+
