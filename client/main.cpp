@@ -1,11 +1,10 @@
 #include <iostream>
 #include <string.h>
 #include "Terminal.h"
+#include "Protocol.h"
 
 #define PROTOCOL_UDP "UDP"
 #define PROTOCOL_TCP "TCP"
-#define UDP 0
-#define TCP 1
 #define MINIMUM_ARGUMENTS 2
 
 

@@ -64,21 +64,32 @@ int Server::run()
                 {
                     m_client_socket = m_socket;
                     
-                    while(true)
+                    bool disconnect = false;
+                    while(!disconnect)
                     {
                         char* message = m_service.receive_udp(m_client_socket, &m_client_addr, &client_addrlen);
-                        calculate(message);
-                        if(message == nullptr)
+                        if(m_service.exit(message))
                         {
-                            std::cout << "Readed failed with error " << strerror(errno) << "\n";
-                            status = EXIT_FAILURE;
-                            break;
+                            disconnect = true;
+                            std::cout << "Client disconnected\n";
+                            close(m_client_socket);
                         }
-                        m_service.send_udp(m_client_socket, message, &m_client_addr, client_addrlen);
+                        else
+                        {
+                            calculate(message);
+                            if(message == nullptr)
+                            {
+                                std::cout << "Readed failed with error " << strerror(errno) << "\n";
+                                status = EXIT_FAILURE;
+                                break;
+                            }
 
-                        memset(message, 0, sizeof(message));
-                        delete[] message;
-                        message = nullptr;
+                            m_service.send_udp(m_client_socket, message, &m_client_addr, client_addrlen);
+
+                            memset(message, 0, sizeof(message));
+                            delete[] message;
+                            message = nullptr;
+                        }
                     }
                     break;
                 }
@@ -96,32 +107,40 @@ int Server::run()
                         else
                         {
                             std::cout << "Client connected with address " << m_client_addr.sin_addr.s_addr << "\n";
-                            while(true)
+
+                            bool disconnect = false;
+                            while(!disconnect)
                             {
                                 char* message = m_service.receive_tcp(m_client_socket);
-                                calculate(message);
-                                if(message == nullptr)
+                                if(m_service.exit(message))
                                 {
-                                    std::cout << "Readed failed with error " << strerror(errno) << "\n";
-                                    status = EXIT_FAILURE;
-                                    break;
+                                    disconnect = true;
+                                    std::cout << "Client disconnected\n";
+                                    close(m_client_socket);
+                                    
                                 }
-                                m_service.send_tcp(m_client_socket, message);
+                                else
+                                {
+                                    calculate(message);
+                                    if(message == nullptr)
+                                    {
+                                        std::cout << "Readed failed with error " << strerror(errno) << "\n";
+                                        status = EXIT_FAILURE;
+                                        break;
+                                    }
+                                    
+                                    m_service.send_tcp(m_client_socket, message);
 
-                                memset(message, 0, sizeof(message));
-                                delete[] message;
-                                message = nullptr;
+                                    memset(message, 0, sizeof(message));
+                                    delete[] message;
+                                    message = nullptr;
+                                }
                             }
-                            std::cout << "Client disconnected\n";
-                            close(m_client_socket);
                         }
                     }
-                }
                     break;
+                }
             }
-
-            close(m_client_socket);
-
         }
     }
 

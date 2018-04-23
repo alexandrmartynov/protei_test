@@ -24,7 +24,7 @@ int Application::getProtocolType() const
     {
         std::cout << UDP << " - UDP\n";
         std::cout << TCP << " - TCP\n";
-        std::cout << "Please, select type [" << TCP << "-" << UDP << "]:";
+        std::cout << "Please, select type [" << FIRST << "-" << COUNT-1 << "]:";
         int type = 0;
         std::cin >> type;
         if(type >= FIRST && type < COUNT)

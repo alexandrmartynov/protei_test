@@ -13,15 +13,7 @@
 #define BUFFER_SIZE 1024
 
 #include "Client.h"
-
-enum Protocol
-{
-    UDP,
-    TCP,
-
-    COUNT,
-    FIRST = TCP
-};
+#include "Protocol.h"
 
 Client::Client():
     m_protocol(0),
@@ -51,30 +43,48 @@ int Client::run()
                 status = EXIT_FAILURE;
             }
         }
-        char* buffer = new char[BUFFER_SIZE];
-        bool exit = false;
-        while(!exit)
+
+        switch(m_protocol)
         {
-            switch(m_protocol)
+            case UDP:
             {
-                case UDP:
+                bool disconnect = false;
+                while(!disconnect)
                 {
-                    while(true)
+                    char* message = m_service.getMessage();
+                    if(m_service.exit(message))
                     {
-                        char* message = m_service.getMessage();
+                        disconnect = true;
+                        m_service.send_udp(m_socket, message, &m_server_addr, server_addrlen);
+                        std::cout << "You are disconnected!\n";
+                        close(m_socket);
+                    }
+                    else
+                    {
                         m_service.send_udp(m_socket, message, &m_server_addr, server_addrlen);
                         char* outputMessage = m_service.receive_udp(m_socket, &m_server_addr, &server_addrlen);
                         std::cout << "Output message: " << outputMessage << "\n";
                         delete[] message;
                         delete[] outputMessage;
                     }
-                    break;
                 }
-                case TCP:
+                break;
+            }
+            case TCP:
+            {
+                bool disconnect = false;
+                while(!disconnect)
                 {
-                    while(true)
+                    char* message = m_service.getMessage();
+                    if(m_service.exit(message))
                     {
-                        char* message = m_service.getMessage();
+                        disconnect = true;
+                        m_service.send_tcp(m_socket, message);
+                        std::cout << "You are disconnected!\n";
+                        close(m_socket);
+                    }
+                    else
+                    {
                         m_service.send_tcp(m_socket, message);
                         char* outputMessage = m_service.receive_tcp(m_socket);
                         std::cout << "Output message: " << outputMessage << "\n";
@@ -83,12 +93,9 @@ int Client::run()
                         message = nullptr;
                         outputMessage = nullptr;
                     }
-                    break;
                 }
+                break;
             }
-
-        close(m_socket);
-        delete[] buffer;
         }  
     }
 

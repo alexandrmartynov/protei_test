@@ -7,7 +7,7 @@ enum Protocol
     TCP,
 
     COUNT,
-    FIRST = UDP
+    FIRST = TCP
 };
 
 #endif

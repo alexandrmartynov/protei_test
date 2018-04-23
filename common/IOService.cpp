@@ -93,8 +93,15 @@ char* IOService::getMessage() const
 {
     char* buffer = new char[BUFFER_SIZE];
     memset(buffer, 0, BUFFER_SIZE);
+    std::cout << "For disconnect, please write -exit\n";
     std::cout << "Write message: ";
     std::cin >> buffer;
     return buffer;
+}
+
+bool IOService::exit(char* message) const
+{
+    return (strcmp(message, "-exit") == 0);
+  
 }
 
