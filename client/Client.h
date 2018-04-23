@@ -2,6 +2,7 @@
 #define CLIENT_H
 
 #include <netinet/in.h>
+#include "../common/IOService.h"
 
 class Client
 {
@@ -12,16 +13,14 @@ public:
 private:
     int setSocket();
     void writeServerAddress();
-    void send_tcp(char* message);
-    void send_udp(char* message);
-    char* receive_tcp();
-    char* receive_udp();
     char* getMessage() const;
 
     sockaddr_in m_server_addr;
     int m_socket;
     int m_client_socket;
     int m_protocol;
+
+    IOService m_service;
 };
 
 #endif

@@ -66,7 +66,7 @@ int Server::run()
                     
                     while(true)
                     {
-                        char* message = receive_udp();
+                        char* message = m_service.receive_udp(m_client_socket, &m_client_addr, &client_addrlen);
                         calculate(message);
                         if(message == nullptr)
                         {
@@ -76,8 +76,10 @@ int Server::run()
                         }
 
                         std::cout << message;
-                        send_udp(message);
-
+                        m_service.send_udp(m_client_socket, message, &m_client_addr, client_addrlen);
+                        memset(message, 0, sizeof(message));
+                        delete[] message;
+                        message = nullptr;
                     }
                     break;
                 }
@@ -97,7 +99,7 @@ int Server::run()
                             std::cout << "Client connected with address " << m_client_addr.sin_addr.s_addr << "\n";
                             while(true)
                             {
-                                char* message = receive_tcp();
+                                char* message = m_service.receive_tcp(m_client_socket);
                                 calculate(message);
                                 if(message == nullptr)
                                 {
@@ -105,7 +107,7 @@ int Server::run()
                                     status = EXIT_FAILURE;
                                     break;
                                 }
-                                send_tcp(message);
+                                m_service.send_tcp(m_client_socket, message);
                                 memset(message, 0, sizeof(message));
                                 delete[] message;
                                 message = nullptr;
@@ -174,7 +176,7 @@ int Server::connectClient()
 
 }
 
-void Server::send_udp(char* message)
+/*void Server::send_udp(char* message)
 {
     char* buffer = message;
     size_t bytes = strlen(message);
@@ -250,7 +252,7 @@ char* Server::receive_tcp()
         buffer = nullptr;
     }
     return buffer;
-}
+}*/
 
 void Server::calculate(char* buffer) const
 {
@@ -293,7 +295,7 @@ void Server::calculate(char* buffer) const
     std::cout << "\n";
 
     auto minmax = std::minmax_element(numbers.begin(), numbers.end());
-    std::cout << "max: " << *minmax.first << "min: " << *minmax.second << "\n";
+    std::cout << "max: " << *minmax.first << " min: " << *minmax.second << "\n";
 
 }
 

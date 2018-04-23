@@ -62,8 +62,8 @@ int Client::run()
                     while(true)
                     {
                         char* message = getMessage();
-                        send_udp(message);
-                        char* outputMessage = receive_udp();
+                        m_service.send_udp(m_socket, message, &m_server_addr, server_addrlen);
+                        char* outputMessage = m_service.receive_udp(m_socket, &m_server_addr, &server_addrlen);
                         std::cout << "Output message: " << outputMessage << "\n";
                         delete[] message;
                         delete[] outputMessage;
@@ -75,8 +75,8 @@ int Client::run()
                     while(true)
                     {
                         char* message = getMessage();
-                        send_tcp(message);
-                        char* outputMessage = receive_tcp();
+                        m_service.send_tcp(m_socket, message);
+                        char* outputMessage = m_service.receive_tcp(m_socket);
                         std::cout << "Output message: " << outputMessage << "\n";
                         delete[] message;
                         delete[] outputMessage;
@@ -127,7 +127,6 @@ void Client::writeServerAddress()
     memset((char *) &m_server_addr, 0 , sizeof(m_server_addr));
     m_server_addr.sin_family = AF_INET;
     m_server_addr.sin_port = htons(PORT);
-    //m_server_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     int convert = inet_aton(LOCALHOST, (in_addr *)&m_server_addr.sin_addr.s_addr);
     if(convert == 0)
     {
@@ -136,7 +135,7 @@ void Client::writeServerAddress()
     }
 }
 
-void Client::send_udp(char* message)
+/*void Client::send_udp(char* message)
 {
     char* buffer = message;
     size_t bytes = strlen(message);
@@ -212,7 +211,7 @@ char* Client::receive_tcp()
         buffer = nullptr;
     }
     return buffer;
-}
+}*/
 
 char* Client::getMessage() const
 {

@@ -4,8 +4,8 @@ project(client)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include_directories(src)
-
-file(GLOB SOURCE "src/*.cpp")
+file(GLOB SOURCE "*.cpp")
 
 add_executable(${PROJECT_NAME} ${SOURCE})
+
+target_link_libraries(client PUBLIC ioservice)
