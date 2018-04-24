@@ -1,4 +1,5 @@
 #include "IOService.h"
+#include "Protocol.h"
 
 #include <iostream>
 #include <sys/types.h>
@@ -18,6 +19,25 @@ IOService::IOService():
 IOService::~IOService()
 {
     delete[] m_buffer;
+}
+
+unsigned short IOService::setProtocolType() const
+{
+    int type = 0;
+    bool correct = false;
+    while(!correct)
+    {
+        std::cout << UDP << " - UDP" << std::endl;
+        std::cout << TCP << " - TCP" << std::endl;
+        std::cout << "Please, select type [" << FIRST << "-" << (COUNT - 1) << "]:";
+        std::cin >> type;
+        if(type >= FIRST && type < COUNT)
+        {
+            correct = true;
+        }      
+    }
+
+    return type;
 }
 
 void IOService::send_tcp(int socket, const char* message) const
@@ -102,12 +122,11 @@ std::string IOService::getMessage() const
     std::cout << "For disconnect, please write -exit\n";
     std::cout << "Write message: ";
     std::cin >> m_buffer;
-    std::cout << m_buffer;
     std::string message(m_buffer);
     return message;
 }
 
-bool IOService::exit(const char* message) const
+bool IOService::exit(std::string& message) const
 {
-    return (strcmp(message, "-exit") == 0);
+    return message.compare("-exit") == 0;
 }

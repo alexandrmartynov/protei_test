@@ -8,8 +8,7 @@ class Client
 {
 public:
     explicit Client();
-    int run();
-    void setProtocolType(int protocol);
+    int exec();
 private:
     int setSocket();
     void writeServerAddress();
@@ -17,7 +16,7 @@ private:
     sockaddr_in m_server_addr;
     int m_socket;
     int m_client_socket;
-    int m_protocol;
+    unsigned short m_protocol;
 
     IOService m_service;
 };

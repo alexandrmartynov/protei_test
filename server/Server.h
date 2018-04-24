@@ -5,18 +5,18 @@
 #include "../common/IOService.h"
 
 #include <list>
+#include <string>
 
 class Server
 {
 public:
     Server();
-    int run();
-    void setProtocolType(unsigned short protocol);
+    int exec();
 private:
     void setSocket();
     void writeServerAddress();
     int connectClient();
-    void calculate(const char* message) const;
+    void calculate(std::string& message) const;
     void displayList(std::list<int> &lst) const;
 
     sockaddr_in m_server_addr;

@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <errno.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <arpa/inet.h>
 #include <cstring>
 #include <unistd.h>
@@ -22,8 +22,10 @@ Client::Client():
     m_socket(0)
 {}
 
-int Client::run()
+int Client::exec()
 {
+    m_protocol = m_service.setProtocolType();
+
     int status = 0;
     m_socket = setSocket();
     if(m_socket < 0)
@@ -53,7 +55,7 @@ int Client::run()
                 while(!disconnect)
                 {
                     std::string message = m_service.getMessage();
-                    if(m_service.exit(message.c_str()))
+                    if(m_service.exit(message))
                     {
                         disconnect = true;
                         m_service.send_udp(m_socket, message.c_str(), &m_server_addr, server_addrlen);
@@ -83,7 +85,7 @@ int Client::run()
                 while(!disconnect)
                 {
                     std::string message = m_service.getMessage();
-                    if(m_service.exit(message.c_str()))
+                    if(m_service.exit(message))
                     {
                         disconnect = true;
                         m_service.send_tcp(m_socket, message.c_str());
@@ -112,11 +114,6 @@ int Client::run()
 
     return status;
 
-}
-
-void Client::setProtocolType(int protocol)
-{
-    m_protocol = protocol;
 }
 
 int Client::setSocket()

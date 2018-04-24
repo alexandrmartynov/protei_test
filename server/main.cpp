@@ -1,8 +1,8 @@
-#include "Application.h"
+#include "Server.h"
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    Application app;
-    int result = app.exec();
+    Server server;
+    int result = server.exec();
     return result;    
 }

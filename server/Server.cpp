@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <algorithm>
 
-
 #define MAX_CLIENT 1
 #define BUFFER_SIZE 1024
 #define PORT 8080
@@ -22,8 +21,10 @@ Server::Server():
     m_client_socket(0)
 {}
 
-int Server::run()
+int Server::exec()
 {
+    m_protocol = m_service.setProtocolType();
+
     int status = 0;
     
     setSocket();
@@ -68,7 +69,7 @@ int Server::run()
                         bool readed_status = m_service.receive_udp(m_client_socket, message,  &m_client_addr, &client_addrlen);
                         if(readed_status)
                         {
-                            if(m_service.exit(message.c_str()))
+                            if(m_service.exit(message))
                             {
                                 disconnect = true;
                                 std::cout << "Client disconnected" << std::endl;
@@ -76,7 +77,7 @@ int Server::run()
                             }
                             else
                             {
-                                calculate(message.c_str());
+                                calculate(message);
                                 m_service.send_udp(m_client_socket, message.c_str(), &m_client_addr, client_addrlen);
                             }
                         }
@@ -109,7 +110,7 @@ int Server::run()
                                 bool readed_status = m_service.receive_tcp(m_client_socket, message);
                                 if(readed_status)
                                 {
-                                    if(m_service.exit(message.c_str()))
+                                    if(m_service.exit(message))
                                     {
                                         disconnect = true;
                                         std::cout << "Client disconnected" << std::endl;
@@ -118,7 +119,7 @@ int Server::run()
                                     }
                                     else
                                     {
-                                        calculate(message.c_str());                                   
+                                        calculate(message);                                   
                                         m_service.send_tcp(m_client_socket, message.c_str());
                                     }
                                 }
@@ -137,11 +138,6 @@ int Server::run()
 
     return status;
  
-}
-
-void Server::setProtocolType(unsigned short protocol)
-{
-    m_protocol = protocol;
 }
 
 void Server::setSocket()
@@ -187,11 +183,11 @@ int Server::connectClient()
 
 }
 
-void Server::calculate(const char* buffer) const
+void Server::calculate(std::string& message) const
 {
     std::list<int> numbers;
     numbers.clear();
-    std::string input(buffer);
+    std::string input(message);
     std::string::iterator parser = input.begin();
 
     while(parser != input.end())
