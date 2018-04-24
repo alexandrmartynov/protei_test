@@ -67,30 +67,33 @@ void IOService::send_udp(int socket, const char* message, sockaddr_in* addr, soc
     } 
 }
 
-std::string IOService::receive_tcp(int socket) const
+bool IOService::receive_tcp(int socket, std::string& message) const
 {
-    std::string message;
     std::memset(m_buffer, 0, BUFFER_SIZE);
     std::size_t bytes = read(socket, static_cast<void*>(m_buffer), BUFFER_SIZE);
+    bool status_readed = false;
     if(bytes > 0)
     {
         m_buffer[bytes] = '\0';
         message.assign(m_buffer);
+        status_readed = true;
     }
-    return message;    
+
+    return status_readed;    
 }
 
-std::string IOService::receive_udp(int socket, sockaddr_in* addr, socklen_t* addrlen) const
+bool IOService::receive_udp(int socket, std::string& message, sockaddr_in* addr, socklen_t* addrlen) const
 {
-    std::string message;
     std::memset(m_buffer, 0, BUFFER_SIZE);
     std::size_t bytes = recvfrom(socket, static_cast<void*>(m_buffer), BUFFER_SIZE, 0, reinterpret_cast<sockaddr*>(addr), addrlen);
+    bool status_readed = false;
     if(bytes > 0)
     {
         m_buffer[bytes] = '\0';
         message.assign(m_buffer);
+        status_readed = true;
     }
-    return message;
+    return status_readed;
 }
 
 std::string IOService::getMessage() const

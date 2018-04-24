@@ -63,8 +63,16 @@ int Client::run()
                     else
                     {
                         m_service.send_udp(m_socket, message.c_str(), &m_server_addr, server_addrlen);
-                        std::string outputMessage = m_service.receive_udp(m_socket, &m_server_addr, &server_addrlen);
-                        std::cout << "Output message: " << outputMessage << std::endl;;
+                        std::string outputMessage;
+                        bool readed_status = m_service.receive_udp(m_socket, outputMessage, &m_server_addr, &server_addrlen);
+                        if(readed_status)
+                        {
+                            std::cout << "Output message: " << outputMessage << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "Message not readed!" << std::endl;
+                        }
                     }
                 }
                 break;
@@ -85,8 +93,16 @@ int Client::run()
                     else
                     {
                         m_service.send_tcp(m_socket, message.c_str());
-                        std::string outputMessage = m_service.receive_tcp(m_socket);
-                        std::cout << "Output message: " << outputMessage << std::endl;
+                        std::string outputMessage;
+                        bool readed_status = m_service.receive_tcp(m_socket, outputMessage);
+                        if(readed_status)
+                        {
+                            std::cout << "Output message: " << outputMessage << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "Message not readed!" << std::endl;
+                        }
                     }
                 }
                 break;

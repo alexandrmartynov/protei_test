@@ -64,24 +64,25 @@ int Server::run()
                     bool disconnect = false;
                     while(!disconnect)
                     {
-                        std::string message = m_service.receive_udp(m_client_socket, &m_client_addr, &client_addrlen);
-                        if(m_service.exit(message.c_str()))
+                        std::string message;
+                        bool readed_status = m_service.receive_udp(m_client_socket, message,  &m_client_addr, &client_addrlen);
+                        if(readed_status)
                         {
-                            disconnect = true;
-                            std::cout << "Client disconnected" << std::endl;
-                            close(m_client_socket);
+                            if(m_service.exit(message.c_str()))
+                            {
+                                disconnect = true;
+                                std::cout << "Client disconnected" << std::endl;
+                                close(m_client_socket);
+                            }
+                            else
+                            {
+                                calculate(message.c_str());
+                                m_service.send_udp(m_client_socket, message.c_str(), &m_client_addr, client_addrlen);
+                            }
                         }
                         else
                         {
-                            calculate(message.c_str());
-                            if(message.empty())
-                            {
-                                std::cout << "Readed failed with error " << strerror(errno) << std::endl;
-                                status = EXIT_FAILURE;
-                                break;
-                            }
-
-                            m_service.send_udp(m_client_socket, message.c_str(), &m_client_addr, client_addrlen);
+                            std::cout << "Message not readed!" << std::endl;
                         }
                     }
                     break;
@@ -104,25 +105,26 @@ int Server::run()
                             bool disconnect = false;
                             while(!disconnect)
                             {
-                                std::string message = m_service.receive_tcp(m_client_socket);
-                                if(m_service.exit(message.c_str()))
+                                std::string message;
+                                bool readed_status = m_service.receive_tcp(m_client_socket, message);
+                                if(readed_status)
                                 {
-                                    disconnect = true;
-                                    std::cout << "Client disconnected" << std::endl;
-                                    close(m_client_socket);
-                                    
+                                    if(m_service.exit(message.c_str()))
+                                    {
+                                        disconnect = true;
+                                        std::cout << "Client disconnected" << std::endl;
+                                        close(m_client_socket);
+                                        
+                                    }
+                                    else
+                                    {
+                                        calculate(message.c_str());                                   
+                                        m_service.send_tcp(m_client_socket, message.c_str());
+                                    }
                                 }
                                 else
                                 {
-                                    calculate(message.c_str());
-                                    if(message.empty())
-                                    {
-                                        std::cout << "Readed failed with error " << strerror(errno) << std::endl;
-                                        status = EXIT_FAILURE;
-                                        break;
-                                    }
-                                    
-                                    m_service.send_tcp(m_client_socket, message.c_str());
+                                    std::cout << "Message not readed!" << std::endl;
                                 }
                             }
                         }

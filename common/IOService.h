@@ -11,8 +11,8 @@ public:
     ~IOService();
     void send_tcp(int socket, const char* message) const;
     void send_udp(int socket, const char* message, sockaddr_in* addr, socklen_t addrlen) const;
-    std::string receive_tcp(int socket) const;
-    std::string receive_udp(int socket, sockaddr_in* addr, socklen_t* addrlen) const;
+    bool receive_tcp(int socket, std::string& message) const;
+    bool receive_udp(int socket, std::string& message, sockaddr_in* addr, socklen_t* addrlen) const;
     std::string getMessage() const;
     bool exit(const char* message) const;
 private:
