@@ -7,7 +7,7 @@
 class Client
 {
 public:
-    Client();
+    explicit Client();
     int run();
     void setProtocolType(int protocol);
 private:

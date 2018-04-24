@@ -1,26 +1,35 @@
+#include "IOService.h"
+
 #include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <errno.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 #include <typeinfo>
 
-#include "IOService.h"
-
 #define BUFFER_SIZE 1024
-#define ERROR -1
 
-void IOService::send_tcp(int socket, char* message) const
+IOService::IOService():
+    m_buffer(new char[BUFFER_SIZE])
+{}
+
+IOService::~IOService()
 {
-    char* buffer = message;
-    size_t bytes = strlen(message);
-    size_t bytesToWrite = bytes;
-    char* currentBufferPosition = buffer;
+    delete[] m_buffer;
+}
+
+void IOService::send_tcp(int socket, const char* message) const
+{
+    std::memset(m_buffer, 0, BUFFER_SIZE);
+    strcpy(m_buffer, message);
+    std::size_t bytes = strlen(message);
+    std::size_t bytesToWrite = bytes;
+    char* currentBufferPosition = m_buffer;
     while(bytesToWrite > 0)
     {
-        size_t bytesWritten = write(
+        std::size_t bytesWritten = write(
                                    socket,
                                    (void*)currentBufferPosition,
                                    bytesToWrite
@@ -33,15 +42,16 @@ void IOService::send_tcp(int socket, char* message) const
     }
 }
 
-void IOService::send_udp(int socket, char* message, sockaddr_in* addr, socklen_t addrlen) const
+void IOService::send_udp(int socket, const char* message, sockaddr_in* addr, socklen_t addrlen) const
 {
-    char* buffer = message;
-    size_t bytes = strlen(message);
-    size_t bytesToWrite = bytes;
-    char* currentBufferPosition = buffer;
+    std::memset(m_buffer, 0, BUFFER_SIZE);
+    strcpy(m_buffer, message);
+    std::size_t bytes = strlen(message);
+    std::size_t bytesToWrite = bytes;
+    char* currentBufferPosition = m_buffer;
     while(bytesToWrite > 0)
     {
-        size_t bytesWritten = sendto(
+        std::size_t bytesWritten = sendto(
                                      socket,
                                      (void*)currentBufferPosition,
                                      bytesToWrite,
@@ -57,51 +67,44 @@ void IOService::send_udp(int socket, char* message, sockaddr_in* addr, socklen_t
     } 
 }
 
-char* IOService::receive_tcp(int socket) const
+std::string IOService::receive_tcp(int socket) const
 {
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-    size_t bytes = read(socket, (void*)buffer, BUFFER_SIZE);
+    std::string message;
+    std::memset(m_buffer, 0, BUFFER_SIZE);
+    std::size_t bytes = read(socket, static_cast<void*>(m_buffer), BUFFER_SIZE);
     if(bytes > 0)
     {
-        buffer[bytes] = '\0';
+        m_buffer[bytes] = '\0';
+        message.assign(m_buffer);
     }
-    else
-    {
-        buffer = nullptr;
-    }
-    return buffer;    
+    return message;    
 }
 
-char* IOService::receive_udp(int socket, sockaddr_in* addr, socklen_t* addrlen) const
+std::string IOService::receive_udp(int socket, sockaddr_in* addr, socklen_t* addrlen) const
 {
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-    size_t bytes = recvfrom(socket, (void*)buffer, BUFFER_SIZE, 0, (sockaddr *) addr, addrlen);
+    std::string message;
+    std::memset(m_buffer, 0, BUFFER_SIZE);
+    std::size_t bytes = recvfrom(socket, static_cast<void*>(m_buffer), BUFFER_SIZE, 0, reinterpret_cast<sockaddr*>(addr), addrlen);
     if(bytes > 0)
     {
-        buffer[bytes] = '\0';
+        m_buffer[bytes] = '\0';
+        message.assign(m_buffer);
     }
-    else
-    {
-        buffer = nullptr;
-    }
-    return buffer;
+    return message;
 }
 
-char* IOService::getMessage() const
+std::string IOService::getMessage() const
 {
-    char* buffer = new char[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
+    std::memset(m_buffer, 0, BUFFER_SIZE);
     std::cout << "For disconnect, please write -exit\n";
     std::cout << "Write message: ";
-    std::cin >> buffer;
-    return buffer;
+    std::cin >> m_buffer;
+    std::cout << m_buffer;
+    std::string message(m_buffer);
+    return message;
 }
 
-bool IOService::exit(char* message) const
+bool IOService::exit(const char* message) const
 {
     return (strcmp(message, "-exit") == 0);
-  
 }
-

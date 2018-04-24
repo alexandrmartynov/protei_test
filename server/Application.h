@@ -10,7 +10,7 @@ public:
     ~Application();
     int exec();
 private:
-    int getProtocolType() const;
+    unsigned short getProtocolType() const;
     Server* m_server;
 };
 
