@@ -9,12 +9,13 @@ class IOService
 public:
     explicit IOService();
     ~IOService();
-    unsigned short setProtocolType() const;
-    void send_tcp(int socket, const char* message) const;
-    void send_udp(int socket, const char* message, sockaddr_in* addr, socklen_t addrlen) const;
-    bool receive_tcp(int socket, std::string& message) const;
-    bool receive_udp(int socket, std::string& message, sockaddr_in* addr, socklen_t* addrlen) const;
-    std::string getMessage() const;
+    unsigned short getProtocolType() const;
+    int getSocket(int protocol) const;
+    void send_tcp(int socket, std::string& message);
+    void send_udp(int socket, std::string& message, sockaddr_in* addr, socklen_t addrlen);
+    bool receive_tcp(int socket, std::string& message);
+    bool receive_udp(int socket, std::string& message, sockaddr_in* addr, socklen_t* addrlen);
+    std::string getMessage();
     bool exit(std::string& message) const;
 private:
     static const std::size_t BUFFER_SIZE = 65536; 

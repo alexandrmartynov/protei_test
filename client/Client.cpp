@@ -22,10 +22,9 @@ Client::Client():
 
 int Client::exec()
 {
-    m_protocol = m_service.setProtocolType();
-
     int status = 0;
-    m_socket = setSocket();
+    m_protocol = m_service.getProtocolType();
+    m_socket = m_service.getSocket(m_protocol);
     if(m_socket < 0)
     {
         std::cout << "socket failed with error " << strerror(errno) << std::endl;
@@ -56,13 +55,13 @@ int Client::exec()
                     if(m_service.exit(message))
                     {
                         disconnect = true;
-                        m_service.send_udp(m_socket, message.c_str(), &m_server_addr, server_addrlen);
+                        m_service.send_udp(m_socket, message, &m_server_addr, server_addrlen);
                         std::cout << "You are disconnected!" << std::endl;
                         close(m_socket);
                     }
                     else
                     {
-                        m_service.send_udp(m_socket, message.c_str(), &m_server_addr, server_addrlen);
+                        m_service.send_udp(m_socket, message, &m_server_addr, server_addrlen);
                         std::string outputMessage;
                         bool readed_status = m_service.receive_udp(m_socket, outputMessage, &m_server_addr, &server_addrlen);
                         if(readed_status)
@@ -86,13 +85,13 @@ int Client::exec()
                     if(m_service.exit(message))
                     {
                         disconnect = true;
-                        m_service.send_tcp(m_socket, message.c_str());
+                        m_service.send_tcp(m_socket, message);
                         std::cout << "You are disconnected!" << std::endl;
                         close(m_socket);
                     }
                     else
                     {
-                        m_service.send_tcp(m_socket, message.c_str());
+                        m_service.send_tcp(m_socket, message);
                         std::string outputMessage;
                         bool readed_status = m_service.receive_tcp(m_socket, outputMessage);
                         if(readed_status)
@@ -112,27 +111,6 @@ int Client::exec()
 
     return status;
 
-}
-
-int Client::setSocket()
-{
-    int sockfd = 0;
-    switch(m_protocol)
-    {
-        case UDP:
-        {
-            sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-            std::cout << "Create UDP socket" << std::endl;
-            break;
-        }
-        case TCP:
-        {
-            sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-            std::cout << "Create TCP socket" << std::endl;
-            break;
-        }
-    }
-    return sockfd;
 }
 
 void Client::writeServerAddress()

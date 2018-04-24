@@ -22,9 +22,9 @@ Server::Server():
 int Server::exec()
 {
     int status = 0;
-    
-    setSocket();
 
+    m_protocol = m_service.getProtocolType();
+    m_socket = m_service.getSocket(m_protocol);
     if(m_socket < 0)
     {
         std::cout << "socket failed with error " << strerror(errno) << std::endl;
@@ -32,6 +32,7 @@ int Server::exec()
     }
     else
     {
+
         writeServerAddress();
 
         socklen_t server_addrlen = sizeof(m_server_addr);
@@ -57,6 +58,7 @@ int Server::exec()
             {
                 case UDP:
                 {
+
                     m_client_socket = m_socket;
                     
                     bool disconnect = false;
@@ -74,8 +76,8 @@ int Server::exec()
                             }
                             else
                             {
-                                calculate(message);
-                                m_service.send_udp(m_client_socket, message.c_str(), &m_client_addr, client_addrlen);
+                                result(message);
+                                m_service.send_udp(m_client_socket, message, &m_client_addr, client_addrlen);
                             }
                         }
                         else
@@ -116,8 +118,8 @@ int Server::exec()
                                     }
                                     else
                                     {
-                                        calculate(message);                                   
-                                        m_service.send_tcp(m_client_socket, message.c_str());
+                                        result(message);                                   
+                                        m_service.send_tcp(m_client_socket, message);
                                     }
                                 }
                                 else
@@ -127,7 +129,9 @@ int Server::exec()
                             }
                         }
                     }
+
                     break;
+
                 }
             }
         }
@@ -135,26 +139,6 @@ int Server::exec()
 
     return status;
  
-}
-
-void Server::setSocket()
-{
-    m_protocol = m_service.setProtocolType();
-    switch(m_protocol)
-    {
-        case UDP:
-        {
-            m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-            std::cout << "Create UDP socket" << std::endl;
-            break;
-        }
-        case TCP:
-        {
-            m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-            std::cout << "Create TCP socket" << std::endl;
-            break;
-        }
-    }
 }
 
 void Server::writeServerAddress()
@@ -181,13 +165,15 @@ int Server::connectClient()
 
 }
 
-void Server::calculate(std::string& message) const
+void Server::result(std::string& message) const
 {
     std::list<int> numbers;
     numbers.clear();
+
     std::string input(message);
 
     parse(message, numbers);
+
     displayList(numbers);
 
     int sum_numbers = std::accumulate(numbers.begin(), numbers.end(), 0);
@@ -207,7 +193,7 @@ void Server::parse(std::string& message, std::list<int> &lst) const
     std::string::iterator parser = message.begin();
     while(parser != message.end())
     {
-        if(*parser >= '0' && *parser <= '9')
+        if(isdigit(*parser))
         {
             char temp = static_cast<char> (*parser);
             int number = std::atoi(&temp);
@@ -226,5 +212,3 @@ void Server::displayList(std::list<int> &lst) const
     }
     std::cout << std::endl;
 }
-
-

@@ -13,14 +13,14 @@ public:
     Server();
     int exec();
 private:
-    void setSocket();
     void writeServerAddress();
     int connectClient();
-    void calculate(std::string& message) const;
+    void result(std::string& message) const;
     void displayList(std::list<int> &lst) const;
     void parse(std::string& message, std::list<int> &lst) const;
 
     static const unsigned int MAX_CLIENT = 1;
+
     sockaddr_in m_server_addr;
     sockaddr_in m_client_addr;
     unsigned short m_protocol;

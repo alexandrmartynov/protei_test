@@ -10,7 +10,6 @@ public:
     explicit Client();
     int exec();
 private:
-    int setSocket();
     void writeServerAddress();
 
     sockaddr_in m_server_addr;
