@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 #include <arpa/inet.h>
 #include <cstring>
@@ -13,8 +13,6 @@
 
 #define LOCALHOST "127.0.0.1"
 #define PORT 8080
-#define BUFFER_SIZE 1024
-
 
 Client::Client():
     m_protocol(0),
@@ -140,7 +138,7 @@ int Client::setSocket()
 void Client::writeServerAddress()
 {
     socklen_t server_addrlen = sizeof(m_server_addr); 
-    std::memset(reinterpret_cast<char *>(&m_server_addr), 0 , server_addrlen);
+    std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);
     m_server_addr.sin_family = AF_INET;
     m_server_addr.sin_port = htons(PORT);
     int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&m_server_addr.sin_addr.s_addr));

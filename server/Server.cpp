@@ -5,14 +5,12 @@
 #include <cstdio>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
 #include <algorithm>
 
-#define MAX_CLIENT 1
-#define BUFFER_SIZE 1024
 #define PORT 8080
 
 Server::Server():
@@ -23,11 +21,10 @@ Server::Server():
 
 int Server::exec()
 {
-    m_protocol = m_service.setProtocolType();
-
     int status = 0;
     
     setSocket();
+
     if(m_socket < 0)
     {
         std::cout << "socket failed with error " << strerror(errno) << std::endl;
@@ -66,7 +63,7 @@ int Server::exec()
                     while(!disconnect)
                     {
                         std::string message;
-                        bool readed_status = m_service.receive_udp(m_client_socket, message,  &m_client_addr, &client_addrlen);
+                        bool readed_status = m_service.receive_udp(m_client_socket, message, &m_client_addr, &client_addrlen);
                         if(readed_status)
                         {
                             if(m_service.exit(message))
@@ -142,6 +139,7 @@ int Server::exec()
 
 void Server::setSocket()
 {
+    m_protocol = m_service.setProtocolType();
     switch(m_protocol)
     {
         case UDP:
@@ -188,20 +186,8 @@ void Server::calculate(std::string& message) const
     std::list<int> numbers;
     numbers.clear();
     std::string input(message);
-    std::string::iterator parser = input.begin();
 
-    while(parser != input.end())
-    {
-        if(*parser >= '0' && *parser <= '9')
-        {
-            char temp = static_cast<char> (*parser);
-            int number = std::atoi(&temp);
-            numbers.push_back(number);
-        }
-
-        parser++;
-    }
-
+    parse(message, numbers);
     displayList(numbers);
 
     int sum_numbers = std::accumulate(numbers.begin(), numbers.end(), 0);
@@ -214,6 +200,22 @@ void Server::calculate(std::string& message) const
 
     auto minmax = std::minmax_element(numbers.begin(), numbers.end());
     std::cout << "min: " << *minmax.first << " max: " << *minmax.second << std::endl;
+}
+
+void Server::parse(std::string& message, std::list<int> &lst) const
+{
+    std::string::iterator parser = message.begin();
+    while(parser != message.end())
+    {
+        if(*parser >= '0' && *parser <= '9')
+        {
+            char temp = static_cast<char> (*parser);
+            int number = std::atoi(&temp);
+            lst.push_back(number);
+        }
+
+        parser++;
+    }
 }
 
 void Server::displayList(std::list<int> &lst) const

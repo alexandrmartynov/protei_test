@@ -4,13 +4,11 @@
 #include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
 #include <typeinfo>
-
-#define BUFFER_SIZE 1024
 
 IOService::IOService():
     m_buffer(new char[BUFFER_SIZE])

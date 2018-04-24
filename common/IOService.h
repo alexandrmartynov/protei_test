@@ -17,6 +17,7 @@ public:
     std::string getMessage() const;
     bool exit(std::string& message) const;
 private:
+    static const std::size_t BUFFER_SIZE = 65536; 
     char* m_buffer;
 };
 
