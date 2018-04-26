@@ -1,5 +1,5 @@
 #include "Client.h"
-#include "../common/Protocol.h"
+#include "Protocol.h"
 
 #include <iostream>
 #include <cstdio>
@@ -23,6 +23,8 @@ Client::Client():
 int Client::exec()
 {
     int status = 0;
+    m_protocol = m_service.getProtocolType();
+    m_socket = m_service.getSocket(m_protocol);
     if(m_socket < 0)
     {
         std::cout << "socket failed with error " << strerror(errno) << std::endl;
