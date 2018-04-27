@@ -62,30 +62,20 @@ int Server::setnonblocking(int socket)
 int Server::exec()
 {
     setup();
-    m_socket_udp.create();
+
+/*    m_socket_udp.create();
     m_socket_udp.binded(m_server_addr);
     socklen_t client_addrlen = sizeof(m_client_addr);
 
     bool close = false;
     while(!close)
     {
-        std::cout << "A\n";
-        std::string message = m_socket_udp.receive(m_client_addr, client_addrlen);
-        std::cout << message;
-        if(message.compare("-exit") == 0)
-        {
-            close = true;
-        }
-        else
-        {
-            std::cout << "B\n";
-            m_socket_udp.send(message, m_client_addr);    
-        }
+        close = m_socket_udp.handle_message(m_server_addr, client_addrlen);
     }
 
-    m_socket_udp.disconnect();
+    m_socket_udp.disconnect();*/
   
-/*    m_socket_tcp.create();
+    m_socket_tcp.create();
     m_socket_tcp.binded(m_server_addr);
     int listen_sock = m_socket_tcp.getSocket();
     listen(listen_sock, 1);
@@ -98,21 +88,11 @@ int Server::exec()
     bool close = false;
     while(!close)
     {
-        std::string message = m_socket_tcp.receive();
-        std::cout << message;
-        if(message.compare("-exit") == 0)
-        {
-            close = true;
-        }
-        else
-        {
-            m_socket_tcp.send(message);    
-        }
+        close = m_socket_tcp.handle_message();
     }
 
     m_socket_tcp.disconnect();
 
-*/
 /*    m_socket_udp.create();
     m_socket_udp.binded(m_server_addr);
     int sock_udp = m_socket_udp.getSocket();

@@ -31,27 +31,7 @@ int Client_tcp::exec(int port)
     bool close = false;
     while(!close)
     {
-        std::string message = getMessage();
-        if(message.compare("-exit") == 0)
-        {
-            close = true;
-            m_socket.send(message);
-            std::cout << "You are disconnected!" << std::endl;
-            m_socket.disconnect();
-        }
-        else
-        {
-            m_socket.send(message);
-            std::string outputMessage = m_socket.receive();
-            if(!outputMessage.empty())
-            {
-                std::cout << "Output message: " << outputMessage << std::endl;
-            }
-            else
-            {
-                std::cout << "Message not readed" << std::endl;
-            }
-        }
+        close = m_socket.echo_message();
     }
 
     return 0;

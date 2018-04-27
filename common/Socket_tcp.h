@@ -20,8 +20,11 @@ public:
     int accepted(sockaddr_in* addr, socklen_t* addrlen);
     void setSocket(int socket);
     int getSocket() const;
-    void handle_message();
+    bool handle_message();
+    bool echo_message();
 private:
+    std::string getMessage() const;
+
     int m_socket;
 };
 

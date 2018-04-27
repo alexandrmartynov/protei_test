@@ -80,7 +80,6 @@ std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
     {
         buffer[bytes] = '\0';
         message.assign(buffer);
-        std::cout << "receive by udp: " << message << std::endl;
         delete[] buffer;
     }
 
@@ -88,23 +87,47 @@ std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
 
 }
 
-void Socket_udp::handle_message(sockaddr_in& addr, socklen_t& addlen)
+bool Socket_udp::handle_message(sockaddr_in& addr, socklen_t& addlen)
 {
     std::string message = {};
-    bool disconnect = false;          
-    while(!disconnect)
+    bool close = false;          
+    while(!close)
     {
         message = receive(addr, addlen);
         std::cout << message;
         if(message.compare("-exit") == 0)
         {
-            disconnect = true;
+            close = true;
         }
         else
         {
             send(message, addr);    
         }
-    }  
+    }
+
+    return close;
+}
+
+bool Socket_udp::echo_message(sockaddr_in& addr, socklen_t& addlen)
+{
+    bool close = false;          
+    while(!close)
+    {
+        std::string message = getMessage();
+        send(message, addr);    
+        std::cout << message;
+        if(message.compare("-exit") == 0)
+        {
+            close = true;
+        }
+        else
+        {
+            message = receive(addr, addlen);
+            std::cout << "echo message: " << message << std::endl;
+        }
+    }
+
+    return close;    
 }
 
 void Socket_udp::disconnect()
@@ -120,4 +143,14 @@ int Socket_udp::getSocket() const
 void Socket_udp::setSocket(int socket)
 {
     m_socket = socket;
+}
+
+std::string Socket_udp::getMessage() const
+{
+    std::string message = {};
+    std::cout << "For disconnect, please write -exit\n";
+    std::cout << "Write message: ";
+    std::cin >> message;
+
+    return message;
 }

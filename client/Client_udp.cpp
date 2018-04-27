@@ -26,27 +26,7 @@ int Client_udp::exec(int port)
     bool close = false;
     while(!close)
     {
-        std::string message = getMessage();
-        if(message.compare("-exit") == 0)
-        {
-            close = true;
-            m_socket.send(message, m_server_addr);
-            std::cout << "You are disconnected!" << std::endl;
-            m_socket.disconnect();
-        }
-        else
-        {
-            m_socket.send(message, m_server_addr);
-            std::string outputMessage = m_socket.receive(m_server_addr, server_addrlen);
-            if(!outputMessage.empty())
-            {
-                std::cout << "Output message: " << outputMessage << std::endl;
-            }
-            else
-            {
-                std::cout << "Message not readed!" << std::endl;
-            }
-        }
+        close = m_socket.echo_message(m_server_addr, server_addrlen);
     }
 
     return 0;
@@ -66,14 +46,4 @@ void Client_udp::setup()
         std::cout << "inet_aton() failed with " << strerror(errno) << std::endl;
         return;
     }  
-}
-
-std::string Client_udp::getMessage() const
-{
-    std::string message = {};
-    std::cout << "For disconnect, please write -exit\n";
-    std::cout << "Write message: ";
-    std::cin >> message;
-
-    return message;
 }

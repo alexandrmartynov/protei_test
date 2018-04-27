@@ -111,23 +111,58 @@ std::string Socket_tcp::receive()
     return message;
 }
 
-void Socket_tcp::handle_message()
+bool Socket_tcp::handle_message()
 {
     std::string message = {};
-    bool disconnect = false;          
-    while(!disconnect)
+    bool close = false;          
+    while(!close)
     {
         message = receive();
         std::cout << message;
         if(message.compare("-exit") == 0)
         {
-            disconnect = false;
+            close = true;
         }
         else
         {
             send(message);    
         }
-    }  
+    }
+
+    return close;
+
+}
+
+bool Socket_tcp::echo_message()
+{
+    bool close = false;          
+    while(!close)
+    {
+        std::string message = getMessage();
+        send(message);
+        if(message.compare("-exit") == 0)
+        {
+            close = true;
+        }
+        else
+        {
+            receive();    
+            std::cout << "echo message: " << message << std::endl;
+        }
+    }
+
+    return close;
+
+}
+
+std::string Socket_tcp::getMessage() const
+{
+    std::string message = {};
+    std::cout << "For disconnect, please write -exit\n";
+    std::cout << "Write message: ";
+    std::cin >> message;
+
+    return message;
 }
 
 void Socket_tcp::setSocket(int socket)
