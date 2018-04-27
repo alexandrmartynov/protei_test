@@ -89,11 +89,10 @@ std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
 
 bool Socket_udp::handle_message(sockaddr_in& addr, socklen_t& addlen)
 {
-    std::string message = {};
     bool close = false;          
     while(!close)
     {
-        message = receive(addr, addlen);
+        std::string message = receive(addr, addlen);
         std::cout << message;
         if(message.compare("-exit") == 0)
         {
@@ -115,7 +114,6 @@ bool Socket_udp::echo_message(sockaddr_in& addr, socklen_t& addlen)
     {
         std::string message = getMessage();
         send(message, addr);    
-        std::cout << message;
         if(message.compare("-exit") == 0)
         {
             close = true;
