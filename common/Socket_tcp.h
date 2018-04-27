@@ -22,8 +22,6 @@ public:
 private:
 
     int m_socket;
-    sockaddr_in m_addr;
-    sockaddr_in m_client_addr;
 };
 
 #endif

@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <typeinfo>
 
+#define LOCALHOST "127.0.0.1"
+
 Client_udp::Client_udp():
     m_port(0)
 {}
@@ -20,7 +22,6 @@ int Client_udp::exec(int port)
     m_socket.create();
     writeInternetAddress();
     socklen_t server_addrlen = sizeof(m_server_addr);
-    m_socket.binded(m_server_addr, server_addrlen);
     
     bool disconnect = false;
     while(!disconnect)
@@ -29,14 +30,14 @@ int Client_udp::exec(int port)
         if(message.compare("-exit") == 0)
         {
             disconnect = true;
-            m_socket.send(message, m_server_addr);
+            m_socket.send(message, &m_server_addr);
             std::cout << "You are disconnected!" << std::endl;
             m_socket.disconnect();
         }
         else
         {
-            m_socket.send(message, m_server_addr);
-            std::string outputMessage = m_socket.receive(m_server_addr, server_addrlen);
+            m_socket.send(message, &m_server_addr);
+            std::string outputMessage = m_socket.receive(&m_server_addr, &server_addrlen);
             if(outputMessage.empty())
             {
                 std::cout << "Output message: " << outputMessage << std::endl;
@@ -58,7 +59,13 @@ void Client_udp::writeInternetAddress()
     std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);
     m_server_addr.sin_family = AF_INET;
     m_server_addr.sin_addr.s_addr = INADDR_ANY;
-    m_server_addr.sin_port = htons(m_port);    
+    m_server_addr.sin_port = htons(m_port);
+    int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&m_server_addr.sin_addr.s_addr));
+    if(convert == 0)
+    {
+        std::cout << "inet_aton() failed with " << strerror(errno) << std::endl;
+        return;
+    }  
 }
 
 std::string Client_udp::getMessage() const

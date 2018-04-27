@@ -22,11 +22,12 @@ Socket_udp::~Socket_udp()
 void Socket_udp::create()
 {
     m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    std::cout << "Create socket UDP" << std::endl;
 }
 
-void Socket_udp::binded(sockaddr_in& addr, const socklen_t& addrlen) const
+void Socket_udp::binded(sockaddr_in& addr)
 {
-    std::cout << "Create socket UDP" << std::endl;
+    socklen_t addrlen = sizeof(addr);
     if(bind(m_socket, reinterpret_cast<sockaddr*>(&addr), addrlen) < 0)
     {
         std::cout << "Bind failed with error " << strerror(errno) << std::endl;
@@ -34,7 +35,7 @@ void Socket_udp::binded(sockaddr_in& addr, const socklen_t& addrlen) const
     }
 }
 
-void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
+void Socket_udp::send(const std::string& message, sockaddr_in* addr) const
 {
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
@@ -48,7 +49,7 @@ void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
                                           (void*)currentBufferPosition,
                                           bytesToWrite,
                                           0,
-                                          reinterpret_cast<sockaddr*>(&addr),
+                                          reinterpret_cast<sockaddr*>(addr),
                                           sizeof(addr)
                                          );
         if(bytesWritten <= bytesToWrite)
@@ -62,7 +63,7 @@ void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
 
 }
 
-std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
+std::string Socket_udp::receive(sockaddr_in* addr, socklen_t* addlen)
 {
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
@@ -71,14 +72,15 @@ std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
                                  static_cast<void*>(buffer),
                                  BUFFER_SIZE,
                                  0,
-                                 reinterpret_cast<sockaddr*>(&addr),
-                                 &addlen
+                                 reinterpret_cast<sockaddr*>(addr),
+                                 addlen
                                 );
-    std::string message;
+    std::string message = {};
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
         message.assign(buffer);
+        std::cout << "receive by udp: " << message << std::endl;
         delete[] buffer;
     }
 
@@ -94,4 +96,9 @@ void Socket_udp::disconnect()
 int Socket_udp::getSocket() const
 {
     return m_socket;
+}
+
+void Socket_udp::setSocket(int socket)
+{
+    m_socket = socket;
 }

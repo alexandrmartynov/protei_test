@@ -27,7 +27,7 @@ int main(int argc, char** argv)
             }
             case 'p':
             {
-                port = std::atoi(optarg);
+                port = std::stoi(optarg);
                 std::cout << "Port: " << port << std::endl;
                 break;
             }
@@ -52,13 +52,11 @@ int main(int argc, char** argv)
     int result = 1;
     if(protocol == "tcp")
     {
-        std::cout << "A\n";
         Client_tcp client;
         result = client.exec(port);
     }
     else if(protocol == "udp")
     {
-        std::cout << "B\n";
         Client_udp client;
         result = client.exec(port);
     }

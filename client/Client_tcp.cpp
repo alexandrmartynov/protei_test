@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <typeinfo>
 
+#define LOCALHOST "127.0.0.1"
+
 Client_tcp::Client_tcp():
     m_port(0)
 {}
@@ -19,7 +21,6 @@ int Client_tcp::exec(int port)
     m_port = port;
     m_socket.create();
     writeInternetAddress();
-    m_socket.binded(m_server_addr);
     int sockfd = m_socket.connect(m_client_addr);
     m_socket.setSocket(sockfd);
 
@@ -69,5 +70,11 @@ void Client_tcp::writeInternetAddress()
     std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);
     m_server_addr.sin_family = AF_INET;
     m_server_addr.sin_addr.s_addr = INADDR_ANY;
-    m_server_addr.sin_port = htons(m_port);    
+    m_server_addr.sin_port = htons(m_port);
+    int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&m_server_addr.sin_addr.s_addr));
+    if(convert == 0)
+    {
+        std::cout << "inet_aton() failed with " << strerror(errno) << std::endl;
+        return;
+    }   
 }
