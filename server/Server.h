@@ -16,6 +16,7 @@ public:
 private:
     void addEvent(int epollfd, int fd) const;
     int setnonblocking(int socket);
+    void setup();
 
     void result(std::string& message) const;
     void displayList(std::list<int> &lst) const;

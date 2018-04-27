@@ -16,7 +16,8 @@ Socket_tcp::Socket_tcp():
 {}
 
 Socket_tcp::~Socket_tcp()
-{}
+{
+}
 
 void Socket_tcp::create()
 {
@@ -36,7 +37,7 @@ void Socket_tcp::binded(sockaddr_in& addr)
 
 void Socket_tcp::listening() const
 {
-    int connect = listen(m_socket, 1);
+    int connect = listen(m_socket, 2);
     if(connect < 0)
     {
         std::cout << "Listen failed with error " << strerror(errno) << std::endl;
@@ -44,9 +45,9 @@ void Socket_tcp::listening() const
     }
 }
 
-void Socket_tcp::connected(sockaddr_in& addr) const
+void Socket_tcp::connected(sockaddr_in& addr, socklen_t addrlen) const
 {
-    int connected = connect(m_socket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
+    int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&addr), addrlen);
     if(connected < 0)
     {
         std::cout << "Failed connection with error " << strerror(errno) << std::endl;
@@ -54,24 +55,18 @@ void Socket_tcp::connected(sockaddr_in& addr) const
     }
 }
 
-int Socket_tcp::accepted(sockaddr_in& client_addr)
+int Socket_tcp::accepted(sockaddr_in* addr, socklen_t* addrlen)
 {
-    int newSocket = 0;
-    bool accepted = false;
-    while(!accepted)
+    socklen_t client_addrlen = sizeof(addr);
+    int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(addr), addrlen);
+    if(newSocket < 0)
     {
-        socklen_t client_addrlen = sizeof(client_addr);
-        newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(&client_addr), &client_addrlen);
-        if(newSocket < 0)
-        {
-            std::cout << "Accept failed with error" << strerror(errno) << std::endl;
-            return EXIT_FAILURE;
-        }
-        else
-        {
-            accepted = true;
-            std::cout << "Accepted TCP socket" << std::endl;
-        }
+        std::cout << "Accept failed with error" << strerror(errno) << std::endl;
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        std::cout << "Accepted TCP socket" << std::endl;
     }
 
     return newSocket;
@@ -80,7 +75,6 @@ int Socket_tcp::accepted(sockaddr_in& client_addr)
 
 void Socket_tcp::send(const std::string& message) const
 {
-    std::cout << "Send\n"; 
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = message.copy(buffer, message.size());
@@ -99,19 +93,13 @@ void Socket_tcp::send(const std::string& message) const
             currentBufferPosition += bytesWritten;
         }
     }
-
-    delete[] buffer;
-
 }
 
 std::string Socket_tcp::receive()
 {
-    std::cout << "Receive\n"; 
     char* buffer = new char[BUFFER_SIZE];
-    size_t size = strlen(buffer);
-    std::memset(buffer, 0, BUFFER_SIZE);
-    
-    std::size_t bytes = read(m_socket, static_cast<void*>(buffer), size);
+    std::memset(buffer, 0, BUFFER_SIZE);  
+    std::size_t bytes = read(m_socket, static_cast<void*>(buffer), BUFFER_SIZE);
     std::string message = {};
     if(bytes > 0)
     {
@@ -119,7 +107,7 @@ std::string Socket_tcp::receive()
         message.assign(buffer);
         delete[] buffer;
     }
-    std::cout << "Return receive:" << message << std::endl;
+
     return message;
 }
 

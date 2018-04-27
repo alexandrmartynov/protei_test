@@ -19,26 +19,26 @@ Client_udp::Client_udp():
 int Client_udp::exec(int port)
 {
     m_port = port;
+    setup();
     m_socket.create();
-    writeInternetAddress();
     socklen_t server_addrlen = sizeof(m_server_addr);
     
-    bool disconnect = false;
-    while(!disconnect)
+    bool close = false;
+    while(!close)
     {
         std::string message = getMessage();
         if(message.compare("-exit") == 0)
         {
-            disconnect = true;
-            m_socket.send(message, &m_server_addr);
+            close = true;
+            m_socket.send(message, m_server_addr);
             std::cout << "You are disconnected!" << std::endl;
             m_socket.disconnect();
         }
         else
         {
-            m_socket.send(message, &m_server_addr);
-            std::string outputMessage = m_socket.receive(&m_server_addr, &server_addrlen);
-            if(outputMessage.empty())
+            m_socket.send(message, m_server_addr);
+            std::string outputMessage = m_socket.receive(m_server_addr, server_addrlen);
+            if(!outputMessage.empty())
             {
                 std::cout << "Output message: " << outputMessage << std::endl;
             }
@@ -53,7 +53,7 @@ int Client_udp::exec(int port)
 
 }
 
-void Client_udp::writeInternetAddress()
+void Client_udp::setup()
 {
     socklen_t server_addrlen = sizeof(m_server_addr);
     std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);

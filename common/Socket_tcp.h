@@ -16,13 +16,12 @@ public:
 
     void binded(sockaddr_in& addr);
     void listening() const;
-    void connected(sockaddr_in& addr) const;
-    int accepted(sockaddr_in& client_addr);
+    void connected(sockaddr_in& addr, socklen_t addrlen) const;
+    int accepted(sockaddr_in* addr, socklen_t* addrlen);
     void setSocket(int socket);
     int getSocket() const;
     void handle_message();
 private:
-
     int m_socket;
 };
 

@@ -10,7 +10,7 @@ public:
     Client_udp();
     int exec(int port);
 private:
-    void writeInternetAddress();
+    void setup();
     std::string getMessage() const;
 
     int m_port;

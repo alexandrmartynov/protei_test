@@ -35,7 +35,7 @@ void Socket_udp::binded(sockaddr_in& addr)
     }
 }
 
-void Socket_udp::send(const std::string& message, sockaddr_in* addr) const
+void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
 {
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
@@ -46,10 +46,10 @@ void Socket_udp::send(const std::string& message, sockaddr_in* addr) const
     {
         std::size_t bytesWritten = sendto(
                                           m_socket,
-                                          (void*)currentBufferPosition,
+                                          reinterpret_cast<void*>(currentBufferPosition),
                                           bytesToWrite,
                                           0,
-                                          reinterpret_cast<sockaddr*>(addr),
+                                          reinterpret_cast<sockaddr*>(&addr),
                                           sizeof(addr)
                                          );
         if(bytesWritten <= bytesToWrite)
@@ -63,7 +63,7 @@ void Socket_udp::send(const std::string& message, sockaddr_in* addr) const
 
 }
 
-std::string Socket_udp::receive(sockaddr_in* addr, socklen_t* addlen)
+std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
 {
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
@@ -72,8 +72,8 @@ std::string Socket_udp::receive(sockaddr_in* addr, socklen_t* addlen)
                                  static_cast<void*>(buffer),
                                  BUFFER_SIZE,
                                  0,
-                                 reinterpret_cast<sockaddr*>(addr),
-                                 addlen
+                                 reinterpret_cast<sockaddr*>(&addr),
+                                 &addlen
                                 );
     std::string message = {};
     if(bytes > 0)
@@ -88,7 +88,7 @@ std::string Socket_udp::receive(sockaddr_in* addr, socklen_t* addlen)
 
 }
 
-void Socket_udp::handle_message(sockaddr_in* addr, socklen_t* addlen)
+void Socket_udp::handle_message(sockaddr_in& addr, socklen_t& addlen)
 {
     std::string message = {};
     bool disconnect = false;          

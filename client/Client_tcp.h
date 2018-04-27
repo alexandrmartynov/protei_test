@@ -10,12 +10,11 @@ public:
     Client_tcp();
     int exec(int port);
 private:
-    void writeInternetAddress();
+    void setup();
     std::string getMessage() const;
 
     int m_port;
     Socket_tcp m_socket;
-    sockaddr_in m_client_addr;
     sockaddr_in m_server_addr;
 };
 

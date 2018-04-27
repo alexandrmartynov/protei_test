@@ -61,18 +61,58 @@ int Server::setnonblocking(int socket)
 
 int Server::exec()
 {
-    socklen_t server_addrlen = sizeof(m_server_addr);
-    std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);
-    m_server_addr.sin_family = AF_INET;
-    m_server_addr.sin_addr.s_addr = INADDR_ANY;
-    m_server_addr.sin_port = htons(PORT);
-    int convert = inet_aton(LOCALHOST, (in_addr *)&m_server_addr.sin_addr.s_addr);
-    if(convert == 0)
+    setup();
+    m_socket_udp.create();
+    m_socket_udp.binded(m_server_addr);
+    socklen_t client_addrlen = sizeof(m_client_addr);
+
+    bool close = false;
+    while(!close)
     {
-        std::cout << "inet_aton() failed with \n";
-        return EXIT_FAILURE;
+        std::cout << "A\n";
+        std::string message = m_socket_udp.receive(m_client_addr, client_addrlen);
+        std::cout << message;
+        if(message.compare("-exit") == 0)
+        {
+            close = true;
+        }
+        else
+        {
+            std::cout << "B\n";
+            m_socket_udp.send(message, m_client_addr);    
+        }
     }
 
+    m_socket_udp.disconnect();
+  
+/*    m_socket_tcp.create();
+    m_socket_tcp.binded(m_server_addr);
+    int listen_sock = m_socket_tcp.getSocket();
+    listen(listen_sock, 1);
+
+    socklen_t client_addrlen = sizeof(m_client_addr);
+    int newsock = m_socket_tcp.accepted(&m_client_addr, &client_addrlen);
+
+
+    m_socket_tcp.setSocket(newsock);
+    bool close = false;
+    while(!close)
+    {
+        std::string message = m_socket_tcp.receive();
+        std::cout << message;
+        if(message.compare("-exit") == 0)
+        {
+            close = true;
+        }
+        else
+        {
+            m_socket_tcp.send(message);    
+        }
+    }
+
+    m_socket_tcp.disconnect();
+
+*/
 /*    m_socket_udp.create();
     m_socket_udp.binded(m_server_addr);
     int sock_udp = m_socket_udp.getSocket();
@@ -81,20 +121,18 @@ int Server::exec()
     setnonblocking(sock_udp);*/
 
 
-    m_socket_tcp.create();
+    /*m_socket_tcp.create();
     int listen_sock = m_socket_tcp.getSocket();
     std::cout << "listen_sock: " << listen_sock << std::endl;
 
     setnonblocking(listen_sock);
 
     m_socket_tcp.binded(m_server_addr);
-    m_socket_tcp.listening();
+    m_socket_tcp.listening();*/
 
     //addEvent(epollfd, listen_sock);
 
-
-
-    int nfds = 0;
+    /*int nfds = 0;
     int epollfd = 0;
     epoll_event ev;
     epoll_event events[2];
@@ -107,7 +145,7 @@ int Server::exec()
     {
        std::cout << "failed epoll_ctl" << std::endl;
        return EXIT_FAILURE;
-    }
+    }*/
 /*
     ev.events = EPOLLIN | EPOLLET;
     ev.data.fd = sock_udp;
@@ -119,7 +157,7 @@ int Server::exec()
 */
     //addEvent(epollfd, sock_udp);
 
-    bool exit = false;
+/*    bool exit = false;
     while(!exit)
     {
         std::cout << "Waiting connection...\n";
@@ -136,37 +174,38 @@ int Server::exec()
         int client_socket = 0;
         socklen_t client_addrlen = sizeof(m_client_addr);
         std::cout << "nfds: " << nfds << std::endl;
-
+        int newsock = 0;
         for (int n = 0; n < nfds; ++n)
         {
             if(events[n].data.fd == listen_sock)
             {
                 std::cout << "TCP\n";
-                client_socket = m_socket_tcp.accepted(m_client_addr);
-                if(client_socket < 0)
+                newsock = accept(listen_sock, (sockaddr*) &m_client_addr, &client_addrlen);
+                if(newsock < 0)
                 {
-                    std::cout << "Accept failed with error" << strerror(errno) << std::endl;
+                    printf("accept failed %d\n", errno);
                     return EXIT_FAILURE;
                 }
 
-                setnonblocking(client_socket);
+                setnonblocking(newsock);
         
                 ev.events = EPOLLIN | EPOLLET;
-                ev.data.fd = client_socket;
-                if (epoll_ctl(epollfd, EPOLL_CTL_ADD, client_socket, &ev) == -1)
+                ev.data.fd = newsock;
+                if (epoll_ctl(epollfd, EPOLL_CTL_ADD, newsock, &ev) == -1)
                 {
                     std::cout << "failed epoll_ctl" << std::endl;
                     return EXIT_FAILURE;
                 }
 
-                std::cout << "Create new socket for TCP: " << client_socket << std::endl;
+                std::cout << "Create new socket for TCP: " << newsock << std::endl;
+                m_socket_tcp.setSocket(newsock);
             }
             /*else if(events[n].data.fd == sock_udp)
             {
                 std::cout << "UDP\n";
                 std::cout << "Do something with udp socket: " << events[n].data.fd << std::endl; 
             }*/
-            else
+ /*           else
             {
                 std::cout << "TCP\n";
                 if(events[n].data.fd & EPOLLIN)
@@ -178,34 +217,50 @@ int Server::exec()
                     int num = 5;
                     while(num--)
                     {
-                        message = m_socket_tcp.receive();
-                        std::cout << message;
-                        if(message.compare("-exit") == 0)
+                        char buf[1024];
+                        std::cout << "Client connected: " << m_client_addr.sin_addr.s_addr << "\n";
+
+                        int readedBytes = read(events[n].data.fd, &buf, 1023);
+                        buf[1024] = '\0';
+
+                        printf("MSG from client: %s\n", buf);
+
+                        write(events[n].data.fd, "OK\n", 3);
+
+                        close(events[n].data.fd);
+                        std::cout << "Client disconnected\n";
+                        ev.data.fd = events[n].data.fd;
+                        if (epoll_ctl(epollfd, EPOLL_CTL_DEL, client_socket, &ev) == -1)
                         {
-                            disconnect = true;
-                        }
-                        else
-                        {
-                            m_socket_tcp.send(message);    
-                        }
+                            std::cout << "failed epoll_ctl" << std::endl;
+                            return EXIT_FAILURE;
+                        }    
                     } 
                 }
 
-                close(events[n].data.fd);
-                ev.data.fd = client_socket;
-                if (epoll_ctl(epollfd, EPOLL_CTL_DEL, client_socket, &ev) == -1)
-                {
-                    std::cout << "failed epoll_ctl" << std::endl;
-                    return EXIT_FAILURE;
-                }    
             }
         }
     }
 
     close(epollfd);
-   
+ */  
     return 0;
 
+}
+
+void Server::setup()
+{
+    socklen_t server_addrlen = sizeof(m_server_addr);
+    std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);
+    m_server_addr.sin_family = AF_INET;
+    m_server_addr.sin_addr.s_addr = INADDR_ANY;
+    m_server_addr.sin_port = htons(PORT);
+    int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&m_server_addr.sin_addr.s_addr));
+    if(convert == 0)
+    {
+        std::cout << "inet_aton() failed with " << strerror(errno) << std::endl;
+        return;
+    }   
 }
 
 void Server::result(std::string& message) const
