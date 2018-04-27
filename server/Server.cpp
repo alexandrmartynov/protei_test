@@ -31,7 +31,7 @@ Server::~Server()
 void Server::addEvent(int epollfd, int fd) const
 {
     epoll_event ev;
-    ev.events = EPOLLIN | EPOLLPRI | EPOLLERR | EPOLLHUP;
+    ev.events = EPOLLIN | EPOLLOUT;
     ev.data.fd = fd;
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == -1)
     {
@@ -73,31 +73,54 @@ int Server::exec()
         return EXIT_FAILURE;
     }
 
-    int nfds = 0;
-    int epollfd = 0;
-    static epoll_event ev;
-    static epoll_event events[MAX_EVENTS];
-    ev.events = EPOLLIN | EPOLLET;
+/*    m_socket_udp.create();
+    m_socket_udp.binded(m_server_addr);
+    int sock_udp = m_socket_udp.getSocket();
+    std::cout << "sock_udp: " << sock_udp << std::endl;
 
-    epollfd = epoll_create1(0);
+    setnonblocking(sock_udp);*/
+
 
     m_socket_tcp.create();
     int listen_sock = m_socket_tcp.getSocket();
+    std::cout << "listen_sock: " << listen_sock << std::endl;
 
     setnonblocking(listen_sock);
 
     m_socket_tcp.binded(m_server_addr);
     m_socket_tcp.listening();
 
-    addEvent(epollfd, listen_sock);
-    m_socket_udp.create();
-    int sock_udp = m_socket_udp.getSocket();
+    //addEvent(epollfd, listen_sock);
 
-    setnonblocking(sock_udp);
 
-    addEvent(epollfd, sock_udp);
 
-    while(true)
+    int nfds = 0;
+    int epollfd = 0;
+    epoll_event ev;
+    epoll_event events[2];
+
+    epollfd = epoll_create(2);
+
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.fd = listen_sock;
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1)
+    {
+       std::cout << "failed epoll_ctl" << std::endl;
+       return EXIT_FAILURE;
+    }
+/*
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.fd = sock_udp;
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sock_udp, &ev) == -1)
+    {
+       std::cout << "failed epoll_ctl" << std::endl;
+       return EXIT_FAILURE;
+    }
+*/
+    //addEvent(epollfd, sock_udp);
+
+    bool exit = false;
+    while(!exit)
     {
         std::cout << "Waiting connection...\n";
         nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
@@ -116,7 +139,7 @@ int Server::exec()
 
         for (int n = 0; n < nfds; ++n)
         {
-            if((events[n].data.fd == listen_sock) & EPOLLIN)
+            if(events[n].data.fd == listen_sock)
             {
                 std::cout << "TCP\n";
                 client_socket = m_socket_tcp.accepted(m_client_addr);
@@ -136,19 +159,49 @@ int Server::exec()
                     return EXIT_FAILURE;
                 }
 
-                m_socket_tcp.setSocket(client_socket);
-                m_socket_tcp.handle_message();
-                m_socket_tcp.disconnect();
+                std::cout << "Create new socket for TCP: " << client_socket << std::endl;
             }
-            else if((events[n].data.fd == sock_udp) & EPOLLIN)
+            /*else if(events[n].data.fd == sock_udp)
             {
                 std::cout << "UDP\n";
-                m_socket_udp.setSocket(events[n].data.fd);
-                m_socket_udp.handle_message(&m_client_addr, &client_addrlen);
-                m_socket_udp.disconnect();
+                std::cout << "Do something with udp socket: " << events[n].data.fd << std::endl; 
+            }*/
+            else
+            {
+                std::cout << "TCP\n";
+                if(events[n].data.fd & EPOLLIN)
+                {
+                    std::cout << "Complete to receive\n";
+                    std::cout << "Do something with tcp socket: " << events[n].data.fd << std::endl;
+                    std::string message = {};
+                    bool disconnect = false;
+                    int num = 5;
+                    while(num--)
+                    {
+                        message = m_socket_tcp.receive();
+                        std::cout << message;
+                        if(message.compare("-exit") == 0)
+                        {
+                            disconnect = true;
+                        }
+                        else
+                        {
+                            m_socket_tcp.send(message);    
+                        }
+                    } 
+                }
+
+                close(events[n].data.fd);
+                ev.data.fd = client_socket;
+                if (epoll_ctl(epollfd, EPOLL_CTL_DEL, client_socket, &ev) == -1)
+                {
+                    std::cout << "failed epoll_ctl" << std::endl;
+                    return EXIT_FAILURE;
+                }    
             }
         }
     }
+
     close(epollfd);
    
     return 0;

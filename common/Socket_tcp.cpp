@@ -80,6 +80,7 @@ int Socket_tcp::accepted(sockaddr_in& client_addr)
 
 void Socket_tcp::send(const std::string& message) const
 {
+    std::cout << "Send\n"; 
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = message.copy(buffer, message.size());
@@ -105,19 +106,20 @@ void Socket_tcp::send(const std::string& message) const
 
 std::string Socket_tcp::receive()
 {
+    std::cout << "Receive\n"; 
     char* buffer = new char[BUFFER_SIZE];
     size_t size = strlen(buffer);
     std::memset(buffer, 0, BUFFER_SIZE);
     
     std::size_t bytes = read(m_socket, static_cast<void*>(buffer), size);
-    std::string message;
+    std::string message = {};
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
         message.assign(buffer);
         delete[] buffer;
     }
-    
+    std::cout << "Return receive:" << message << std::endl;
     return message;
 }
 

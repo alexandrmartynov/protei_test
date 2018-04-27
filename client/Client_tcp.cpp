@@ -20,10 +20,10 @@ int Client_tcp::exec(int port)
 {
     m_port = port;
     m_socket.create();
+    std::cout << "Client socket: " << m_socket.getSocket();
+
     writeInternetAddress();
     m_socket.connected(m_server_addr);
-    int sockfd = m_socket.accepted(m_client_addr);
-    m_socket.setSocket(sockfd);
 
     bool disconnect = false;
     while(!disconnect)
