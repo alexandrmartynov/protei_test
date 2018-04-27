@@ -1,4 +1,4 @@
-#include "SocketTCP.h"
+#include "Socket_tcp.h"
 
 #include <iostream>
 #include <cstdio>
@@ -11,36 +11,45 @@
 
 #define BUFFER_SIZE 1024
 
-SocketTCP::SocketTCP():
+Socket_tcp::Socket_tcp():
     m_socket(0)
 {}
 
-SocketTCP::~SocketTCP()
+Socket_tcp::~Socket_tcp()
 {}
 
-int SocketTCP::create()
+void Socket_tcp::create()
 {
-    int listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     std::cout << "Create socket TCP" << std::endl;
-    if(bind(m_socket, reinterpret_cast<sockaddr*>(&m_addr), sizeof(m_addr)) < 0)
+}
+
+void Socket_tcp::binded(sockaddr_in& addr)
+{
+    socklen_t addrlen = sizeof(addr);
+    if(bind(m_socket, reinterpret_cast<sockaddr*>(&addr), addrlen) < 0)
     {
         std::cout << "Bind failed with error " << strerror(errno) << std::endl;
-        return EXIT_FAILURE;
+        return;
     }
+}
 
-    int connect = listen(listen_sock, 1);
+int Socket_tcp::connect(sockaddr_in& client_addr)
+{
+    int connect = listen(m_socket, 1);
     if(connect < 0)
     {
         std::cout << "Listen failed with error " << strerror(errno) << std::endl;
         return EXIT_FAILURE;
     }
 
+    int newSocket = 0;
     bool accepted = false;
     while(!accepted)
     {
-        socklen_t client_addrlen = sizeof(m_client_addr);
-        m_socket = accept(listen_sock, reinterpret_cast<sockaddr*>(&m_client_addr), &client_addrlen);
-        if(m_socket < 0)
+        socklen_t client_addrlen = sizeof(client_addr);
+        newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(&client_addr), &client_addrlen);
+        if(newSocket < 0)
         {
             std::cout << "Accept failed with error" << strerror(errno) << std::endl;
             return EXIT_FAILURE;
@@ -51,11 +60,12 @@ int SocketTCP::create()
             std::cout << "Accepted TCP socket" << std::endl;
         }
     }
-    
-    return m_socket;
+
+    return newSocket;
+
 }
 
-void SocketTCP::send(const std::string& message) const
+void Socket_tcp::send(const std::string& message) const
 {
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
@@ -80,7 +90,7 @@ void SocketTCP::send(const std::string& message) const
 
 }
 
-std::string SocketTCP::receive()
+std::string Socket_tcp::receive()
 {
     char* buffer = new char[BUFFER_SIZE];
     size_t size = strlen(buffer);
@@ -98,12 +108,17 @@ std::string SocketTCP::receive()
     return message;
 }
 
-void SocketTCP::setSocket(int socket)
+void Socket_tcp::setSocket(int socket)
 {
     m_socket = socket;
 }
 
-void SocketTCP::writeAddress(sockaddr_in addr)
+int Socket_tcp::getSocket() const
 {
-   m_addr = addr;
+    return m_socket;
+}
+
+void Socket_tcp::disconnect()
+{
+    close(m_socket);
 }

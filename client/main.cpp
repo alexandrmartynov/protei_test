@@ -1,4 +1,5 @@
-#include "Client.h"
+#include "Client_tcp.h"
+#include "Client_udp.h"
 
 #include <getopt.h>
 #include <iostream>
@@ -48,8 +49,23 @@ int main(int argc, char** argv)
 
     std::cout << "Protocol: " << protocol << " port: " << port << std::endl;
 
-  
-    Client client;
-    int result = client.exec();
+    int result = 1;
+    if(protocol == "tcp")
+    {
+        std::cout << "A\n";
+        Client_tcp client;
+        result = client.exec(port);
+    }
+    else if(protocol == "udp")
+    {
+        std::cout << "B\n";
+        Client_udp client;
+        result = client.exec(port);
+    }
+    else
+    {
+        std::cout << "wrong protocol type!" << std::endl;
+    }
+
     return result;
 }

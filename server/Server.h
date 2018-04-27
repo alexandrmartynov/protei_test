@@ -1,8 +1,8 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "SocketTCP.h"
-#include "SocketUDP.h"
+#include "Socket_tcp.h"
+#include "Socket_udp.h"
 
 #include <netinet/in.h>
 
@@ -24,8 +24,8 @@ private:
     static const unsigned int MAX_EVENTS = 10;
     static const unsigned int BUFFER_SIZE = 1024;
     
-    SocketTCP m_socket_tcp;
-    SocketUDP m_socket_udp;
+    Socket_tcp m_socket_tcp;
+    Socket_udp m_socket_udp;
     char* m_buffer;
 };
 

@@ -15,8 +15,6 @@
 #include <unistd.h>
 #include <typeinfo>
 
-#include <sys/poll.h>
-
 #define LOCALHOST "127.0.0.1"
 #define PORT 8080
 

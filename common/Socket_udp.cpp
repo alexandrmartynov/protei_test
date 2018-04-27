@@ -1,4 +1,4 @@
-#include "SocketUDP.h"
+#include "Socket_udp.h"
 
 #include <iostream>
 #include <cstdio>
@@ -12,36 +12,30 @@
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
-SocketUDP::SocketUDP():
+Socket_udp::Socket_udp():
     m_socket(0)
 {}
 
-SocketUDP::~SocketUDP()
+Socket_udp::~Socket_udp()
 {}
 
-int SocketUDP::create()
+void Socket_udp::create()
 {
-    socklen_t m_addrlen = sizeof(m_addr);
-    std::memset(reinterpret_cast<char*>(&m_addr), 0 , m_addrlen);
-    m_addr.sin_family = AF_INET;
-    m_addr.sin_addr.s_addr = INADDR_ANY;
-    m_addr.sin_port = htons(PORT);
-
     m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-
-    std::cout << "Create socket UDP" << std::endl;
-    if(bind(m_socket, reinterpret_cast<sockaddr*>(&m_addr), m_addrlen) < 0)
-    {
-        std::cout << "Bind failed with error " << strerror(errno) << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    return m_socket;
 }
 
-void SocketUDP::send(const std::string& message) const
+void Socket_udp::binded(sockaddr_in& addr, const socklen_t& addrlen) const
 {
-    sockaddr_in addr = m_addr;
+    std::cout << "Create socket UDP" << std::endl;
+    if(bind(m_socket, reinterpret_cast<sockaddr*>(&addr), addrlen) < 0)
+    {
+        std::cout << "Bind failed with error " << strerror(errno) << std::endl;
+        return;
+    }
+}
+
+void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
+{
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = message.copy(buffer, message.size());
@@ -55,7 +49,7 @@ void SocketUDP::send(const std::string& message) const
                                           bytesToWrite,
                                           0,
                                           reinterpret_cast<sockaddr*>(&addr),
-                                          sizeof(m_addr)
+                                          sizeof(addr)
                                          );
         if(bytesWritten <= bytesToWrite)
         {
@@ -68,10 +62,8 @@ void SocketUDP::send(const std::string& message) const
 
 }
 
-std::string SocketUDP::receive()
+std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
 {
-    sockaddr_in addr = m_addr;
-    socklen_t addlen = sizeof(addr);
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = recvfrom(
@@ -92,4 +84,9 @@ std::string SocketUDP::receive()
 
     return message;
 
+}
+
+void Socket_udp::disconnect()
+{
+    close(m_socket);
 }
