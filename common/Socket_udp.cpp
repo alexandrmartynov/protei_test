@@ -90,3 +90,8 @@ void Socket_udp::disconnect()
 {
     close(m_socket);
 }
+
+int Socket_udp::getSocket() const
+{
+    return m_socket;
+}

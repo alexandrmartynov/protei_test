@@ -13,12 +13,7 @@ public:
     ~Server();
     int exec();
 private:
-    void send_udp(int socket, std::string& message, sockaddr_in* addr, socklen_t addrlen);
-    bool receive_udp(int socket, std::string& message, sockaddr_in* addr, socklen_t* addrlen);
-    void send_tcp(int socket, std::string& message);
-    bool receive_tcp(int socket, std::string& message);
-
-
+    void addEvent(int epollfd, int fd) const;
     int setnonblocking(int socket);
 
     static const unsigned int MAX_EVENTS = 10;

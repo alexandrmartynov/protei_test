@@ -14,6 +14,7 @@ public:
     void send(const std::string& message, sockaddr_in& addr) const;
     void disconnect();
     std::string receive(sockaddr_in& addr, socklen_t& addlen);
+    int getSocket() const;
 private:
     int m_socket;
 };

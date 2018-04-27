@@ -27,7 +27,7 @@ int Client_tcp::exec(int port)
     while(!disconnect)
     {
         std::string message = getMessage();
-        if(message.compare("-exit"))
+        if(message.compare("-exit") == 0)
         {
             disconnect = true;
             m_socket.send(message);

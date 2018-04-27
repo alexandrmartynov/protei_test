@@ -15,6 +15,7 @@ public:
     void disconnect();
 
     void binded(sockaddr_in& m_addr);
+    void listening() const;
     int connect(sockaddr_in& client_addr);
     void setSocket(int socket);
     int getSocket() const;

@@ -34,14 +34,18 @@ void Socket_tcp::binded(sockaddr_in& addr)
     }
 }
 
-int Socket_tcp::connect(sockaddr_in& client_addr)
+void Socket_tcp::listening() const
 {
     int connect = listen(m_socket, 1);
     if(connect < 0)
     {
         std::cout << "Listen failed with error " << strerror(errno) << std::endl;
-        return EXIT_FAILURE;
+        return;
     }
+}
+
+int Socket_tcp::connect(sockaddr_in& client_addr)
+{
 
     int newSocket = 0;
     bool accepted = false;
