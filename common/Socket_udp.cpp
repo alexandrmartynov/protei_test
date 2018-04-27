@@ -88,6 +88,25 @@ std::string Socket_udp::receive(sockaddr_in* addr, socklen_t* addlen)
 
 }
 
+void Socket_udp::handle_message(sockaddr_in* addr, socklen_t* addlen)
+{
+    std::string message = {};
+    bool disconnect = false;          
+    while(!disconnect)
+    {
+        message = receive(addr, addlen);
+        std::cout << message;
+        if(message.compare("-exit") == 0)
+        {
+            disconnect = true;
+        }
+        else
+        {
+            send(message, addr);    
+        }
+    }  
+}
+
 void Socket_udp::disconnect()
 {
     close(m_socket);

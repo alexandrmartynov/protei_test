@@ -85,7 +85,7 @@ int Server::exec()
     int listen_sock = m_socket_tcp.getSocket();
 
     setnonblocking(listen_sock);
-
+    m_socket_tcp.binded(m_server_addr);
     m_socket_tcp.listening();
 
     ev.data.fd = listen_sock;
@@ -130,8 +130,7 @@ int Server::exec()
             if((events[n].data.fd == listen_sock) & EPOLLIN)
             {
                 std::cout << "TCP\n";
-                m_socket_tcp.binded(m_server_addr);
-                client_socket = m_socket_tcp.connect(m_client_addr);
+                client_socket = m_socket_tcp.accepted(m_client_addr);
                 if(client_socket < 0)
                 {
                     std::cout << "Accept failed with error" << strerror(errno) << std::endl;
@@ -150,48 +149,19 @@ int Server::exec()
 
                 m_socket_tcp.setSocket(client_socket);
             }
-            else if(events[n].data.fd & EPOLLIN)
+            else if((events[n].data.fd == sock_udp) & EPOLLIN)
             {
                 std::cout << "UDP\n";
-                bool disconnect = false; 
-                m_socket_udp.setSocket(events[n].data.fd);         
-                while(!disconnect)
-                {
-                    message = m_socket_udp.receive(&m_client_addr, &client_addrlen);
-                    std::cout << message;
-                    if(message.compare("-exit") == 0)
-                    {
-                        disconnect = true;
-                        close(events[n].data.fd);
-                        numFds--;
-                    }
-                    else
-                    {
-                        m_socket_udp.send(message, &m_client_addr); 
-                    }  
-                }
+                m_socket_udp.setSocket(events[n].data.fd);
+                m_socket_udp.handle_message(&m_client_addr, &client_addrlen);
+                m_socket_udp.disconnect();
+                numFds--;
             }
             else
             {
-                if(events[n].data.fd == client_socket)
-                {
-                    bool disconnect = false;          
-                    while(!disconnect)
-                    {
-                        message = m_socket_tcp.receive();
-                        std::cout << message;
-                        if(message.compare("-exit") == 0)
-                        {
-                            disconnect = true;
-                            close(events[n].data.fd);
-                            numFds--;
-                        }
-                        else
-                        {
-                            m_socket_tcp.send(message);    
-                        }
-                    }
-                }
+                m_socket_tcp.handle_message();
+                m_socket_tcp.disconnect();
+                numFds--;
             }
         }
     }

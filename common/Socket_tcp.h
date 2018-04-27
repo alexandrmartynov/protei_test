@@ -14,11 +14,13 @@ public:
     std::string receive();
     void disconnect();
 
-    void binded(sockaddr_in& m_addr);
+    void binded(sockaddr_in& addr);
     void listening() const;
-    int connect(sockaddr_in& client_addr);
+    void connected(sockaddr_in& addr) const;
+    int accepted(sockaddr_in& client_addr);
     void setSocket(int socket);
     int getSocket() const;
+    void handle_message();
 private:
 
     int m_socket;

@@ -16,6 +16,7 @@ public:
     std::string receive(sockaddr_in* addr, socklen_t* addlen);
     int getSocket() const;
     void setSocket(int socket);
+    void handle_message(sockaddr_in* addr, socklen_t* addlen);
 private:
     int m_socket;
 };

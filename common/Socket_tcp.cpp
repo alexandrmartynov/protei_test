@@ -44,9 +44,18 @@ void Socket_tcp::listening() const
     }
 }
 
-int Socket_tcp::connect(sockaddr_in& client_addr)
+void Socket_tcp::connected(sockaddr_in& addr) const
 {
+    int connected = connect(m_socket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
+    if(connected < 0)
+    {
+        std::cout << "Failed connection with error " << strerror(errno) << std::endl;
+        return;
+    }
+}
 
+int Socket_tcp::accepted(sockaddr_in& client_addr)
+{
     int newSocket = 0;
     bool accepted = false;
     while(!accepted)
@@ -110,6 +119,25 @@ std::string Socket_tcp::receive()
     }
     
     return message;
+}
+
+void Socket_tcp::handle_message()
+{
+    std::string message = {};
+    bool disconnect = false;          
+    while(!disconnect)
+    {
+        message = receive();
+        std::cout << message;
+        if(message.compare("-exit") == 0)
+        {
+            disconnect = false;
+        }
+        else
+        {
+            send(message);    
+        }
+    }  
 }
 
 void Socket_tcp::setSocket(int socket)

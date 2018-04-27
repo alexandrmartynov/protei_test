@@ -21,7 +21,8 @@ int Client_tcp::exec(int port)
     m_port = port;
     m_socket.create();
     writeInternetAddress();
-    int sockfd = m_socket.connect(m_client_addr);
+    m_socket.connected(m_server_addr);
+    int sockfd = m_socket.accepted(m_client_addr);
     m_socket.setSocket(sockfd);
 
     bool disconnect = false;
