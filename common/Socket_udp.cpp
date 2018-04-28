@@ -3,7 +3,6 @@
 #include <iostream>
 #include <cstdio>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -129,6 +128,10 @@ void Socket_udp::setSocket(int socket)
     m_socket = socket;
 }
 
+void Socket_udp::closeSocket()
+{
+    close(m_socket);
+}
 std::string Socket_udp::getMessage() const
 {
     std::string message = {};

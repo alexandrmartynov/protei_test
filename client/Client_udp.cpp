@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <typeinfo>
 
+
 #define LOCALHOST "127.0.0.1"
 
 Client_udp::Client_udp():
@@ -25,9 +26,7 @@ int Client_udp::exec(int port)
     Socket_udp socket;
     socket.create();
     socket.handle_message(server_addr);
-
-    int currentsock = socket.getSocket();
-    close(currentsock);
+    socket.closeSocket();
 
     return 0;
 

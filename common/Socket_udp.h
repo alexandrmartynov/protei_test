@@ -18,6 +18,7 @@ public:
     void setSocket(int socket);
     void handle_message(sockaddr_in& addr);
     std::string echo_message(sockaddr_in& addr);
+    void closeSocket();
 private:
     std::string getMessage() const;
 
