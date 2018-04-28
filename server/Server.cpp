@@ -20,14 +20,8 @@
 #define LOCALHOST "127.0.0.1"
 #define PORT 8080
 
-Server::Server():
-    m_buffer(new char[1024])
-{}
-
 Server::~Server()
-{
-    delete[] m_buffer;
-}
+{}
 
 void Server::addEvent(int epollfd, int fd) const
 {
@@ -62,15 +56,13 @@ int Server::setnonblocking(int socket)
 
 int Server::exec()
 {
-    setup();
-
-    m_addr.setup(PORT);
+    m_server_addr.setup(PORT);
 
     Socket_udp m_socket_udp;
     m_socket_udp.create();
     int sock_udp = m_socket_udp.getSocket();
     setnonblocking(sock_udp);
-    m_socket_udp.binded(m_addr);
+    m_socket_udp.binded(m_server_addr);
 
     Socket_tcp m_socket_tcp;
     m_socket_tcp.create();
@@ -105,8 +97,7 @@ int Server::exec()
         {
             if(events[n].data.fd == listen_sock)
             {
-                sock_tcp = m_socket_tcp.accepted(&m_client_addr);
-                std::cout << "new socket tcp: " << sock_tcp << std::endl;
+                sock_tcp = m_socket_tcp.accepted(m_client_addr);
                 if(sock_tcp < 0)
                 {
                     printf("accept failed %d\n", errno);
@@ -125,15 +116,15 @@ int Server::exec()
             }
             else if(events[n].data.fd == sock_udp)
             {
-                std::cout << "UDP\n";
+                std::cout << "UDP connect" << std::endl;
                 m_socket_udp.setSocket(events[n].data.fd);
                 message.clear();
-                message = m_socket_udp.echo_message(m_addr);
+                message = m_socket_udp.echo_message(m_server_addr);
                 result(message);
             }
             else
             {
-                std::cout << "TCP\n";
+                std::cout << "TCP connect" << std::endl;
                 m_socket_tcp.setSocket(events[n].data.fd);
                 message.clear();
                 message = m_socket_tcp.echo_message();
@@ -146,21 +137,6 @@ int Server::exec()
 
     return 0;
 
-}
-
-void Server::setup()
-{
-    socklen_t server_addrlen = sizeof(m_server_addr);
-    std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);
-    m_server_addr.sin_family = AF_INET;
-    m_server_addr.sin_addr.s_addr = INADDR_ANY;
-    m_server_addr.sin_port = htons(PORT);
-    int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&m_server_addr.sin_addr.s_addr));
-    if(convert == 0)
-    {
-        std::cout << "inet_aton() failed with " << strerror(errno) << std::endl;
-        return;
-    }   
 }
 
 void Server::result(std::string& message) const

@@ -10,7 +10,7 @@ public:
     int exec(int port);
 private:
 
-    InternetAddress server_addr;
+    InternetAddress m_server_addr;
 };
 
 #endif

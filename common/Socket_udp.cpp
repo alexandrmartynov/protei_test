@@ -8,7 +8,6 @@
 #include <cstring>
 #include <unistd.h>
 
-#define PORT 8080
 #define BUFFER_SIZE 1024
 
 Socket_udp::Socket_udp():
@@ -116,7 +115,6 @@ std::string Socket_udp::echo_message(InternetAddress& addr)
 {
     std::string message = {};
     message = receive(addr);
-    std::cout << message;
     send(message, addr);
 
     return message;
@@ -136,6 +134,7 @@ void Socket_udp::closeSocket()
 {
     close(m_socket);
 }
+
 std::string Socket_udp::getMessage() const
 {
     std::string message = {};

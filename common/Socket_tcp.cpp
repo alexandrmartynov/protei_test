@@ -1,5 +1,6 @@
 #include "Socket_tcp.h"
 
+#include <netinet/in.h>
 #include <iostream>
 #include <cstdio>
 #include <sys/types.h>
@@ -10,7 +11,6 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE 1024
-#define EXIT_FAILURE 1
 
 Socket_tcp::Socket_tcp():
     m_socket(0)
@@ -25,10 +25,11 @@ void Socket_tcp::create()
     std::cout << "Create socket TCP" << std::endl;
 }
 
-void Socket_tcp::binded(sockaddr_in& addr)
+void Socket_tcp::binded(InternetAddress& addr)
 {
-    socklen_t addrlen = sizeof(addr);
-    if(bind(m_socket, reinterpret_cast<sockaddr*>(&addr), addrlen) < 0)
+    socklen_t addrlen = addr.getAddrSize();
+    sockaddr_in& currentAddr = addr.getAddress();
+    if(bind(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), addrlen) < 0)
     {
         std::cout << "Bind failed with error " << strerror(errno) << std::endl;
         return;
@@ -45,10 +46,11 @@ void Socket_tcp::listening() const
     }
 }
 
-void Socket_tcp::connected(sockaddr_in& addr) const
+void Socket_tcp::connected(InternetAddress& addr) const
 {
-    socklen_t addrlen = sizeof(addr);
-    int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&addr), addrlen);
+    socklen_t addrlen = addr.getAddrSize();
+    sockaddr_in& currentAddr = addr.getAddress();
+    int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&currentAddr), addrlen);
     if(connected < 0)
     {
         std::cout << "Failed connection with error " << strerror(errno) << std::endl;
@@ -56,10 +58,11 @@ void Socket_tcp::connected(sockaddr_in& addr) const
     }
 }
 
-int Socket_tcp::accepted(sockaddr_in* addr)
+int Socket_tcp::accepted(InternetAddress& addr)
 {
-    socklen_t addrlen = sizeof(addr);
-    int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(addr), &addrlen);
+    socklen_t addrlen = addr.getAddrSize();
+    sockaddr_in& currentAddr = addr.getAddress();
+    int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), &addrlen);
     if(newSocket < 0)
     {
         std::cout << "Accept failed with error" << strerror(errno) << std::endl;
@@ -138,7 +141,6 @@ std::string Socket_tcp::echo_message()
     std::string message = {};
     message.clear();
     message = receive();
-    std::cout << message << std::endl;
     send(message);
     return message;   
 }
@@ -162,4 +164,9 @@ void Socket_tcp::setSocket(int socket)
 int Socket_tcp::getSocket() const
 {
     return m_socket;
+}
+
+void Socket_tcp::closeSocket()
+{
+    close(m_socket);
 }
