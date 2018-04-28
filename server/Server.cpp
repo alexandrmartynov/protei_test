@@ -84,9 +84,9 @@ int Server::exec()
     addEvent(epollfd, sock_udp);
     addEvent(epollfd, listen_sock);
     
-    int numb = 10;
-    while(numb--)
+    while(true)
     {
+        m_socket_tcp.setSocket(listen_sock);
         std::cout << "Waiting connection...\n";
         nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
         if (nfds <= -1)
@@ -130,13 +130,10 @@ int Server::exec()
             else
             {
                 std::cout << "TCP\n";
-                std::cout << "TCP socket: " << events[n].data.fd << std::endl;
                 m_socket_tcp.setSocket(events[n].data.fd);
                 message.clear();
                 message = m_socket_tcp.echo_message();
                 result(message);
-                close(events[n].data.fd);
-                m_socket_tcp.setSocket(listen_sock);
             }
         }
     }
