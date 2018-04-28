@@ -1,4 +1,6 @@
 #include "Server.h"
+#include "Socket_tcp.h"
+#include "Socket_udp.h"
 
 #include <iostream>
 #include <fcntl.h>
@@ -62,11 +64,13 @@ int Server::exec()
 {
     setup();
 
+    m_addr.setup(PORT);
+
     Socket_udp m_socket_udp;
     m_socket_udp.create();
     int sock_udp = m_socket_udp.getSocket();
     setnonblocking(sock_udp);
-    m_socket_udp.binded(m_server_addr);
+    m_socket_udp.binded(m_addr);
 
     Socket_tcp m_socket_tcp;
     m_socket_tcp.create();
@@ -124,7 +128,7 @@ int Server::exec()
                 std::cout << "UDP\n";
                 m_socket_udp.setSocket(events[n].data.fd);
                 message.clear();
-                message = m_socket_udp.echo_message(m_client_addr);
+                message = m_socket_udp.echo_message(m_addr);
                 result(message);
             }
             else

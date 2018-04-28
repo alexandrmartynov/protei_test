@@ -1,17 +1,16 @@
 #ifndef CLIENT_UDPH
 #define CLIENT_UDPH
 
-#include <netinet/in.h>
+#include <InternetAddress.h>
 
 class Client_udp
 {
 public:
-    Client_udp();
+    Client_udp() = default;
     int exec(int port);
 private:
-    void setup(sockaddr_in& addr) const;
 
-    int m_port;
+    InternetAddress server_addr;
 };
 
 #endif

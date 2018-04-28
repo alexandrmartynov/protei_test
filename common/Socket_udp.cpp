@@ -24,18 +24,21 @@ void Socket_udp::create()
     std::cout << "Create socket UDP" << std::endl;
 }
 
-void Socket_udp::binded(sockaddr_in& addr)
+void Socket_udp::binded(InternetAddress& addr)
 {
-    socklen_t addrlen = sizeof(addr);
-    if(bind(m_socket, reinterpret_cast<sockaddr*>(&addr), addrlen) < 0)
+    socklen_t addrlen = addr.getAddrSize();
+    sockaddr_in& currentAddr = addr.getAddress();
+    if(bind(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), addrlen) < 0)
     {
         std::cout << "Bind failed with error " << strerror(errno) << std::endl;
         return;
     }
 }
 
-void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
+void Socket_udp::send(const std::string& message, InternetAddress& addr) const
 {
+    socklen_t addrlen = addr.getAddrSize();
+    sockaddr_in& currentAddr = addr.getAddress();
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = message.copy(buffer, message.size());
@@ -48,8 +51,8 @@ void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
                                           reinterpret_cast<void*>(currentBufferPosition),
                                           bytesToWrite,
                                           0,
-                                          reinterpret_cast<sockaddr*>(&addr),
-                                          sizeof(addr)
+                                          reinterpret_cast<sockaddr*>(&currentAddr),
+                                          addrlen
                                          );
         if(bytesWritten <= bytesToWrite)
         {
@@ -62,9 +65,10 @@ void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
 
 }
 
-std::string Socket_udp::receive(sockaddr_in& addr)
+std::string Socket_udp::receive(InternetAddress& addr)
 {
-    socklen_t addlen = sizeof(addr);
+    socklen_t addrlen = addr.getAddrSize();
+    sockaddr_in& currentAddr = addr.getAddress();
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = recvfrom(
@@ -72,8 +76,8 @@ std::string Socket_udp::receive(sockaddr_in& addr)
                                  static_cast<void*>(buffer),
                                  BUFFER_SIZE,
                                  0,
-                                 reinterpret_cast<sockaddr*>(&addr),
-                                 &addlen
+                                 reinterpret_cast<sockaddr*>(&currentAddr),
+                                 &addrlen
                                 );
     std::string message = {};
     if(bytes > 0)
@@ -88,7 +92,7 @@ std::string Socket_udp::receive(sockaddr_in& addr)
 
 }
 
-void Socket_udp::handle_message(sockaddr_in& addr)
+void Socket_udp::handle_message(InternetAddress& addr)
 {
     bool exit = false;
     while(!exit)
@@ -108,7 +112,7 @@ void Socket_udp::handle_message(sockaddr_in& addr)
     }
 }
 
-std::string Socket_udp::echo_message(sockaddr_in& addr)
+std::string Socket_udp::echo_message(InternetAddress& addr)
 {
     std::string message = {};
     message = receive(addr);

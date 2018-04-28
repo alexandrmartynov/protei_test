@@ -1,11 +1,10 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "Socket_tcp.h"
-#include "Socket_udp.h"
-
+#include "InternetAddress.h"
 #include <netinet/in.h>
 #include <list>
+#include <string>
 
 class Server
 {
@@ -27,6 +26,7 @@ private:
     
     sockaddr_in m_client_addr;
     sockaddr_in m_server_addr;
+    InternetAddress m_addr;
     char* m_buffer;
 };
 
