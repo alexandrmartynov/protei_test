@@ -1,7 +1,6 @@
 #ifndef CLIENT_TCPH
 #define CLIENT_TCPH
 
-#include "Socket_tcp.h"
 #include <netinet/in.h>
 
 class Client_tcp
@@ -10,12 +9,9 @@ public:
     Client_tcp();
     int exec(int port);
 private:
-    void setup();
-    std::string getMessage() const;
+    void setup(sockaddr_in& addr) const;
 
     int m_port;
-    Socket_tcp m_socket;
-    sockaddr_in m_server_addr;
 };
 
 #endif

@@ -10,14 +10,14 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE 1024
+#define EXIT_FAILURE 1
 
 Socket_tcp::Socket_tcp():
     m_socket(0)
 {}
 
 Socket_tcp::~Socket_tcp()
-{
-}
+{}
 
 void Socket_tcp::create()
 {
@@ -37,7 +37,7 @@ void Socket_tcp::binded(sockaddr_in& addr)
 
 void Socket_tcp::listening() const
 {
-    int connect = listen(m_socket, 2);
+    int connect = listen(m_socket, 1);
     if(connect < 0)
     {
         std::cout << "Listen failed with error " << strerror(errno) << std::endl;
@@ -45,8 +45,9 @@ void Socket_tcp::listening() const
     }
 }
 
-void Socket_tcp::connected(sockaddr_in& addr, socklen_t addrlen) const
+void Socket_tcp::connected(sockaddr_in& addr) const
 {
+    socklen_t addrlen = sizeof(addr);
     int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&addr), addrlen);
     if(connected < 0)
     {
@@ -55,14 +56,14 @@ void Socket_tcp::connected(sockaddr_in& addr, socklen_t addrlen) const
     }
 }
 
-int Socket_tcp::accepted(sockaddr_in* addr, socklen_t* addrlen)
+int Socket_tcp::accepted(sockaddr_in* addr)
 {
-    socklen_t client_addrlen = sizeof(addr);
-    int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(addr), addrlen);
+    socklen_t addrlen = sizeof(addr);
+    int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(addr), &addrlen);
     if(newSocket < 0)
     {
         std::cout << "Accept failed with error" << strerror(errno) << std::endl;
-        return EXIT_FAILURE;
+        newSocket = EXIT_FAILURE;
     }
     else
     {
@@ -105,59 +106,47 @@ std::string Socket_tcp::receive()
     {
         buffer[bytes] = '\0';
         message.assign(buffer);
-        delete[] buffer;
     }
+
+    delete[] buffer;
 
     return message;
 }
 
-bool Socket_tcp::handle_message()
+void Socket_tcp::handle_message()
 {
     std::string message = {};
-    bool close = false;          
-    while(!close)
+    bool exit = false;
+    while(!exit)
     {
-        message = receive();
-        std::cout << message;
+        message = getMessage();
         if(message.compare("-exit") == 0)
         {
-            close = true;
+            exit = true;
         }
         else
         {
-            send(message);    
+            send(message);
+            message = receive();
+            std::cout << "echo: " << message << std::endl;
         }
-    }
-
-    return close;
-
+    } 
 }
 
-bool Socket_tcp::echo_message()
+std::string Socket_tcp::echo_message()
 {
-    bool close = false;          
-    while(!close)
-    {
-        std::string message = getMessage();
-        send(message);
-        if(message.compare("-exit") == 0)
-        {
-            close = true;
-        }
-        else
-        {
-            receive();    
-            std::cout << "echo message: " << message << std::endl;
-        }
-    }
-
-    return close;
-
+    std::string message = {};
+    message.clear();
+    message = receive();
+    std::cout << message << std::endl;
+    send(message);
+    return message;   
 }
 
 std::string Socket_tcp::getMessage() const
 {
     std::string message = {};
+    message.clear();
     std::cout << "For disconnect, please write -exit\n";
     std::cout << "Write message: ";
     std::cin >> message;
@@ -173,9 +162,4 @@ void Socket_tcp::setSocket(int socket)
 int Socket_tcp::getSocket() const
 {
     return m_socket;
-}
-
-void Socket_tcp::disconnect()
-{
-    close(m_socket);
 }

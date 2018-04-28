@@ -63,8 +63,9 @@ void Socket_udp::send(const std::string& message, sockaddr_in& addr) const
 
 }
 
-std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
+std::string Socket_udp::receive(sockaddr_in& addr)
 {
+    socklen_t addlen = sizeof(addr);
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = recvfrom(
@@ -80,57 +81,42 @@ std::string Socket_udp::receive(sockaddr_in& addr, socklen_t& addlen)
     {
         buffer[bytes] = '\0';
         message.assign(buffer);
-        delete[] buffer;
     }
+
+    delete[] buffer;
 
     return message;
 
 }
 
-bool Socket_udp::handle_message(sockaddr_in& addr, socklen_t& addlen)
+void Socket_udp::handle_message(sockaddr_in& addr)
 {
-    bool close = false;          
-    while(!close)
+    bool exit = false;
+    while(!exit)
     {
-        std::string message = receive(addr, addlen);
-        std::cout << message;
+        std::string message = {};
+        message = getMessage();
         if(message.compare("-exit") == 0)
         {
-            close = true;
+            exit = true;
         }
         else
         {
-            send(message, addr);    
-        }
-    }
-
-    return close;
-}
-
-bool Socket_udp::echo_message(sockaddr_in& addr, socklen_t& addlen)
-{
-    bool close = false;          
-    while(!close)
-    {
-        std::string message = getMessage();
-        send(message, addr);    
-        if(message.compare("-exit") == 0)
-        {
-            close = true;
-        }
-        else
-        {
-            message = receive(addr, addlen);
+            send(message, addr);
+            message = receive(addr);
             std::cout << "echo message: " << message << std::endl;
         }
     }
-
-    return close;    
 }
 
-void Socket_udp::disconnect()
+std::string Socket_udp::echo_message(sockaddr_in& addr)
 {
-    close(m_socket);
+    std::string message = {};
+    message = receive(addr);
+    std::cout << message;
+    send(message, addr);
+
+    return message;
 }
 
 int Socket_udp::getSocket() const

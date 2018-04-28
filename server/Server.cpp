@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <sys/epoll.h>
 
-
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -31,7 +30,7 @@ Server::~Server()
 void Server::addEvent(int epollfd, int fd) const
 {
     epoll_event ev;
-    ev.events = EPOLLIN | EPOLLOUT;
+    ev.events = EPOLLIN;
     ev.data.fd = fd;
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == -1)
     {
@@ -63,48 +62,30 @@ int Server::exec()
 {
     setup();
 
+    Socket_udp m_socket_udp;
     m_socket_udp.create();
     int sock_udp = m_socket_udp.getSocket();
     setnonblocking(sock_udp);
-
     m_socket_udp.binded(m_server_addr);
 
-
+    Socket_tcp m_socket_tcp;
     m_socket_tcp.create();
     m_socket_tcp.binded(m_server_addr);
     int listen_sock = m_socket_tcp.getSocket();
-
     setnonblocking(listen_sock);
-
     m_socket_tcp.listening();
-
-    socklen_t client_addrlen = sizeof(m_client_addr);
 
     int nfds = 0;
     int epollfd = 0;
     epoll_event ev;
     epoll_event events[MAX_EVENTS];
-
     epollfd = epoll_create(MAX_EVENTS);
 
-    ev.events = EPOLLIN;
-    ev.data.fd = sock_udp;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sock_udp, &ev) == -1)
-    {
-       std::cout << "failed epoll_ctl" << std::endl;
-       return EXIT_FAILURE;
-    }
-
-    ev.events = EPOLLIN;
-    ev.data.fd = listen_sock;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1)
-    {
-       std::cout << "failed epoll_ctl" << std::endl;
-       return EXIT_FAILURE;
-    }
+    addEvent(epollfd, sock_udp);
+    addEvent(epollfd, listen_sock);
     
-    bool exit = false;
-    while(true)
+    int numb = 10;
+    while(numb--)
     {
         std::cout << "Waiting connection...\n";
         nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
@@ -114,15 +95,14 @@ int Server::exec()
             return EXIT_FAILURE;
         }
 
-        memset(m_buffer, 0, BUFFER_SIZE);
-        std::string message = {};
         int sock_tcp = 0;
-        socklen_t client_addrlen = sizeof(m_client_addr);
+        std::string message = {};
         for (int n = 0; n < nfds; ++n)
         {
             if(events[n].data.fd == listen_sock)
             {
-                sock_tcp = m_socket_tcp.accepted(&m_client_addr, &client_addrlen);
+                sock_tcp = m_socket_tcp.accepted(&m_client_addr);
+                std::cout << "new socket tcp: " << sock_tcp << std::endl;
                 if(sock_tcp < 0)
                 {
                     printf("accept failed %d\n", errno);
@@ -139,41 +119,24 @@ int Server::exec()
                     return EXIT_FAILURE;
                 }
             }
-            else if((events[n].data.fd == sock_udp) & EPOLLIN)
+            else if(events[n].data.fd == sock_udp)
             {
                 std::cout << "UDP\n";
                 m_socket_udp.setSocket(events[n].data.fd);
-                bool close = false;
-                while(!close)
-                {
-                    close = m_socket_udp.handle_message(m_client_addr, client_addrlen);
-                }
-                m_socket_udp.disconnect();
-
-                ev.data.fd = -1;
-                if (epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev) == -1)
-                {
-                    std::cout << "failed epoll_ctl" << std::endl;
-                    return EXIT_FAILURE;
-                }
+                message.clear();
+                message = m_socket_udp.echo_message(m_client_addr);
+                result(message);
             }
             else
             {
                 std::cout << "TCP\n";
+                std::cout << "TCP socket: " << events[n].data.fd << std::endl;
                 m_socket_tcp.setSocket(events[n].data.fd);
-                bool close = false;
-                while(!close)
-                {
-                    close = m_socket_tcp.handle_message();
-                }
-                m_socket_tcp.disconnect();
-                       
-                ev.data.fd = -1;           
-                if (epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev) == -1)
-                {
-                    std::cout << "failed epoll_ctl" << std::endl;
-                    return EXIT_FAILURE;
-                }
+                message.clear();
+                message = m_socket_tcp.echo_message();
+                result(message);
+                close(events[n].data.fd);
+                m_socket_tcp.setSocket(listen_sock);
             }
         }
     }
@@ -227,9 +190,9 @@ void Server::parse(std::string& message, std::list<int> &lst) const
     std::string::iterator parser = message.begin();
     while(parser != message.end())
     {
-        if(isdigit(*parser))
+        if((*parser >= '0') && (*parser <= '9'))
         {
-            int number = *parser + '0';
+            int number = *parser - '0';
             lst.push_back(number);
         }
 

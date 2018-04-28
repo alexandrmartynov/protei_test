@@ -25,8 +25,6 @@ private:
     static const unsigned int MAX_EVENTS = 10;
     static const unsigned int BUFFER_SIZE = 1024;
     
-    Socket_tcp m_socket_tcp;
-    Socket_udp m_socket_udp;
     sockaddr_in m_client_addr;
     sockaddr_in m_server_addr;
     char* m_buffer;

@@ -1,4 +1,5 @@
 #include "Client_udp.h"
+#include "Socket_udp.h"
 
 #include <iostream>
 #include <arpa/inet.h>
@@ -18,29 +19,28 @@ Client_udp::Client_udp():
 
 int Client_udp::exec(int port)
 {
+    sockaddr_in server_addr;
     m_port = port;
-    setup();
-    m_socket.create();
-    socklen_t server_addrlen = sizeof(m_server_addr);
-    
-    bool close = false;
-    while(!close)
-    {
-        close = m_socket.echo_message(m_server_addr, server_addrlen);
-    }
+    setup(server_addr);
+    Socket_udp socket;
+    socket.create();
+    socket.handle_message(server_addr);
+
+    int currentsock = socket.getSocket();
+    close(currentsock);
 
     return 0;
 
 }
 
-void Client_udp::setup()
+void Client_udp::setup(sockaddr_in& addr) const
 {
-    socklen_t server_addrlen = sizeof(m_server_addr);
-    std::memset(reinterpret_cast<char*>(&m_server_addr), 0 , server_addrlen);
-    m_server_addr.sin_family = AF_INET;
-    m_server_addr.sin_addr.s_addr = INADDR_ANY;
-    m_server_addr.sin_port = htons(m_port);
-    int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&m_server_addr.sin_addr.s_addr));
+    socklen_t addrlen = sizeof(addr);
+    std::memset(reinterpret_cast<char*>(&addr), 0 , addrlen);
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(m_port);
+    int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&addr.sin_addr.s_addr));
     if(convert == 0)
     {
         std::cout << "inet_aton() failed with " << strerror(errno) << std::endl;

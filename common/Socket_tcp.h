@@ -12,16 +12,15 @@ public:
     virtual void create() override;
     void send(const std::string& message) const;
     std::string receive();
-    void disconnect();
 
     void binded(sockaddr_in& addr);
     void listening() const;
-    void connected(sockaddr_in& addr, socklen_t addrlen) const;
-    int accepted(sockaddr_in* addr, socklen_t* addrlen);
+    void connected(sockaddr_in& addr) const;
+    int accepted(sockaddr_in* addr);
     void setSocket(int socket);
     int getSocket() const;
-    bool handle_message();
-    bool echo_message();
+    void handle_message();
+    std::string echo_message();
 private:
     std::string getMessage() const;
 
