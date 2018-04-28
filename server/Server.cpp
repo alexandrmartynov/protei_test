@@ -4,13 +4,8 @@
 
 #include <iostream>
 #include <fcntl.h>
-#include <cstdio>
 #include <sys/epoll.h>
 
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
