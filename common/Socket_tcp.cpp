@@ -3,8 +3,6 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <cstdio>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -23,17 +21,6 @@ void Socket_tcp::create()
 {
     m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     std::cout << "Create socket TCP" << std::endl;
-}
-
-void Socket_tcp::binded(InternetAddress& addr)
-{
-    socklen_t addrlen = addr.getAddrSize();
-    sockaddr_in& currentAddr = addr.getAddress();
-    if(bind(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), addrlen) < 0)
-    {
-        std::cout << "Bind failed with error " << strerror(errno) << std::endl;
-        return;
-    }
 }
 
 void Socket_tcp::listening() const

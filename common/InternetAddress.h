@@ -6,8 +6,9 @@
 class InternetAddress
 {
 public:
-    InternetAddress() = default;
+    explicit InternetAddress() = default;
     void setup(int port);
+    void binded(int socket);
     socklen_t getAddrSize() const;
     sockaddr_in& getAddress();
 private:

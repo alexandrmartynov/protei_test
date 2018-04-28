@@ -56,14 +56,18 @@ int Server::exec()
     Socket_udp m_socket_udp;
     m_socket_udp.create();
     int sock_udp = m_socket_udp.getSocket();
+
     setnonblocking(sock_udp);
-    m_socket_udp.binded(m_server_addr);
+
+    m_server_addr.binded(sock_udp);
 
     Socket_tcp m_socket_tcp;
     m_socket_tcp.create();
-    m_socket_tcp.binded(m_server_addr);
     int listen_sock = m_socket_tcp.getSocket();
+
     setnonblocking(listen_sock);
+
+    m_server_addr.binded(listen_sock);
     m_socket_tcp.listening();
 
     int nfds = 0;
@@ -115,7 +119,10 @@ int Server::exec()
                 m_socket_udp.setSocket(events[n].data.fd);
                 message.clear();
                 message = m_socket_udp.echo_message(m_server_addr);
-                result(message);
+                if(message.compare("-exit") != 0)
+                {
+                    result(message);
+                }
             }
             else
             {
@@ -123,7 +130,10 @@ int Server::exec()
                 m_socket_tcp.setSocket(events[n].data.fd);
                 message.clear();
                 message = m_socket_tcp.echo_message();
-                result(message);
+                if(message.compare("-exit") != 0)
+                {
+                    result(message);
+                }
             }
         }
     }

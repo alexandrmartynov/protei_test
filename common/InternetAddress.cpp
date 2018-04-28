@@ -27,6 +27,15 @@ void InternetAddress::setup(int port)
     }
 }
 
+void InternetAddress::binded(const int socket)
+{
+    if(bind(socket, reinterpret_cast<sockaddr*>(&m_addr), sizeof(m_addr)) < 0)
+    {
+        std::cout << "Bind failed with error " << strerror(errno) << std::endl;
+        return;
+    }
+}
+
 socklen_t InternetAddress::getAddrSize() const
 {
     return sizeof(m_addr);

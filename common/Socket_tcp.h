@@ -4,22 +4,25 @@
 #include "Socket.h"
 #include "InternetAddress.h"
 
+#include <string>
+
 class Socket_tcp: public Socket
 {
 public:
-    Socket_tcp();
+    explicit Socket_tcp();
     virtual ~Socket_tcp();
     virtual void create() override;
-    void send(const std::string& message) const;
-    std::string receive();
+    virtual void closeSocket() override;
 
-    void binded(InternetAddress& addr);
     void listening() const;
     void connected(InternetAddress& addr) const;
     int accepted(InternetAddress& addr);
+    
+    void send(const std::string& message) const;
+    std::string receive();
+
     void setSocket(int socket);
     int getSocket() const;
-    void closeSocket();
     void handle_message();
     std::string echo_message();
 private:

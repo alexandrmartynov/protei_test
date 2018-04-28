@@ -6,7 +6,7 @@
 class Client_tcp
 {
 public:
-    Client_tcp() = default;
+    explicit Client_tcp() = default;
     int exec(int port);
 private:
 

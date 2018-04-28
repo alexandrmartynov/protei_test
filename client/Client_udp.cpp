@@ -8,6 +8,6 @@ int Client_udp::exec(int port)
     socket.create();
     socket.handle_message(m_server_addr);
     socket.closeSocket();
-    return 0;
 
+    return 0;
 }

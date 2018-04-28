@@ -6,7 +6,7 @@
 class Client_udp
 {
 public:
-    Client_udp() = default;
+    explicit Client_udp() = default;
     int exec(int port);
 private:
 

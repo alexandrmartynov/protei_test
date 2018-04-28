@@ -9,7 +9,7 @@
 class Server
 {
 public:
-    Server() = default;
+    explicit Server() = default;
     ~Server();
     int exec();
 private:

@@ -23,17 +23,6 @@ void Socket_udp::create()
     std::cout << "Create socket UDP" << std::endl;
 }
 
-void Socket_udp::binded(InternetAddress& addr)
-{
-    socklen_t addrlen = addr.getAddrSize();
-    sockaddr_in& currentAddr = addr.getAddress();
-    if(bind(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), addrlen) < 0)
-    {
-        std::cout << "Bind failed with error " << strerror(errno) << std::endl;
-        return;
-    }
-}
-
 void Socket_udp::send(const std::string& message, InternetAddress& addr) const
 {
     socklen_t addrlen = addr.getAddrSize();
