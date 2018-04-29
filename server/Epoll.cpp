@@ -34,25 +34,6 @@ void Epoll::addEvent(int fd)
     }
 }
 
-/*int Epoll::setNonBlockingSocket(int& socket) const
-{
-    int result = -1;
-    int flag = fcntl(socket, F_GETFL);
-    
-    if(flag >= 0)
-    {
-
-        flag = (flag | O_NONBLOCK);
-        if(fcntl(socket, F_SETFL, flag) >= 0)
-        {
-            result = 0;
-            std::cout << "Set flag to file descriptor" << std::endl;
-        }
-    }
-
-    return result;
-}*/
-
 int Epoll::wait() const
 {
     std::cout << "Waiting connection..." << std::endl;;

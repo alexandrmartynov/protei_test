@@ -76,7 +76,7 @@ int Server::exec()
                 message = m_socket_udp.echo_message(m_server_addr);
                 if(message.compare("-exit") != 0)
                 {
-                    result(message);
+                    m_parser.start(message);
                 }
             }
             else
@@ -87,7 +87,7 @@ int Server::exec()
                 message = m_socket_tcp.echo_message();
                 if(message.compare("-exit") != 0)
                 {
-                    result(message);
+                    m_parser.start(message);
                 }
             }
         }
@@ -103,8 +103,7 @@ int Server::exec()
 int Server::setnonblocking(int socket)
 {
     int result = -1;
-    int flag = fcntl(socket, F_GETFL);
-    
+    int flag = fcntl(socket, F_GETFL);    
     if(flag >= 0)
     {
 
@@ -112,57 +111,9 @@ int Server::setnonblocking(int socket)
         if(fcntl(socket, F_SETFL, flag) >= 0)
         {
             result = 0;
-            std::cout << "Flag set successful" << std::endl;
         }
     }
 
     return result;
 
-}
-
-void Server::result(std::string& message) const
-{
-    std::list<int> numbers;
-    numbers.clear();
-
-    std::string input(message);
-
-    parse(message, numbers);
-
-    displayList(numbers);
-
-    int sum_numbers = std::accumulate(numbers.begin(), numbers.end(), 0);
-
-    std::cout << "sum of numbers: " << sum_numbers << std::endl;
-
-    numbers.sort(std::greater<int>());
-
-    displayList(numbers);
-
-    auto minmax = std::minmax_element(numbers.begin(), numbers.end());
-    std::cout << "min: " << *minmax.first << " max: " << *minmax.second << std::endl;
-}
-
-void Server::parse(std::string& message, std::list<int> &lst) const
-{
-    std::string::iterator parser = message.begin();
-    while(parser != message.end())
-    {
-        if((*parser >= '0') && (*parser <= '9'))
-        {
-            int number = *parser - '0';
-            lst.push_back(number);
-        }
-
-        parser++;
-    }
-}
-
-void Server::displayList(std::list<int> &lst) const
-{
-    for(int &item: lst)
-    {
-        std::cout << item << " ";    
-    }
-    std::cout << std::endl;
 }

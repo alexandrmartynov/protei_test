@@ -126,9 +126,9 @@ void Socket_tcp::handle_message()
 std::string Socket_tcp::echo_message()
 {
     std::string message = {};
-    message.clear();
     message = receive();
     send(message);
+
     return message;   
 }
 

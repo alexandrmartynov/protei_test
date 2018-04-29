@@ -82,10 +82,10 @@ std::string Socket_udp::receive(InternetAddress& addr)
 
 void Socket_udp::handle_message(InternetAddress& addr)
 {
+    std::string message = {};
     bool exit = false;
     while(!exit)
     {
-        std::string message = {};
         message = getMessage();
         if(message.compare("-exit") == 0)
         {
@@ -95,7 +95,7 @@ void Socket_udp::handle_message(InternetAddress& addr)
         {
             send(message, addr);
             message = receive(addr);
-            std::cout << "echo message: " << message << std::endl;
+            std::cout << "echo: " << message << std::endl;
         }
     }
 }
