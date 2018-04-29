@@ -1,6 +1,7 @@
 #include "Server.h"
 #include "Socket_tcp.h"
 #include "Socket_udp.h"
+#include "Epoll.h"
 
 #include <iostream>
 #include <fcntl.h>
@@ -18,105 +19,59 @@
 Server::~Server()
 {}
 
-void Server::addEvent(int epollfd, int fd) const
-{
-    epoll_event ev;
-    ev.events = EPOLLIN;
-    ev.data.fd = fd;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == -1)
-    {
-       std::cout << "failed epoll_ctl" << std::endl;
-       return;
-    }
-}
-
-int Server::setnonblocking(int socket)
-{
-    int ret = -1;
-    int flag = fcntl(socket, F_GETFL);
-    
-    if(flag >= 0)
-    {
-
-        flag = (flag | O_NONBLOCK);
-        if(fcntl(socket, F_SETFL, flag) >= 0)
-        {
-            ret = 0;
-        }
-    }
-
-    return ret;
-
-}
-
 int Server::exec()
 {
-    m_server_addr.setup(PORT);
+    Epoll epoll(MAX_EVENTS);
 
+    m_server_addr.setup(PORT);
     Socket_udp m_socket_udp;
     m_socket_udp.create();
     int sock_udp = m_socket_udp.getSocket();
-
     setnonblocking(sock_udp);
-
     m_server_addr.binded(sock_udp);
 
     Socket_tcp m_socket_tcp;
     m_socket_tcp.create();
     int listen_sock = m_socket_tcp.getSocket();
-
     setnonblocking(listen_sock);
-
     m_server_addr.binded(listen_sock);
     m_socket_tcp.listening();
 
-    int nfds = 0;
-    int epollfd = 0;
-    epoll_event ev;
-    epoll_event events[MAX_EVENTS];
-    epollfd = epoll_create(MAX_EVENTS);
+    epoll.createEvents();
+    epoll.createEpollfd();
 
-    addEvent(epollfd, sock_udp);
-    addEvent(epollfd, listen_sock);
+    epoll.addEvent(sock_udp);
+    epoll.addEvent(listen_sock);
     
+    int nfds = 0;
     while(true)
     {
         m_socket_tcp.setSocket(listen_sock);
-        std::cout << "Waiting connection...\n";
-        nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
-        if (nfds <= -1)
-        {
-            std::cout << "epoll_wait failed" << std::endl;
-            return EXIT_FAILURE;
-        }
+        
+        nfds = epoll.wait();
 
         int sock_tcp = 0;
         std::string message = {};
         for (int n = 0; n < nfds; ++n)
         {
-            if(events[n].data.fd == listen_sock)
+            int fd = epoll.getfd(n);
+            if(fd == listen_sock)
             {
                 sock_tcp = m_socket_tcp.accepted(m_client_addr);
                 if(sock_tcp < 0)
                 {
+                    std::cout << "accept failed with error " << strerror(errno) << std::endl;
                     printf("accept failed %d\n", errno);
                     return EXIT_FAILURE;
                 }
 
                 setnonblocking(sock_tcp);
-        
-                ev.events = EPOLLIN | EPOLLET;
-                ev.data.fd = sock_tcp;
-                if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sock_tcp, &ev) == -1)
-                {
-                    std::cout << "failed epoll_ctl" << std::endl;
-                    return EXIT_FAILURE;
-                }
+                epoll.addEvent(sock_tcp);
             }
-            else if(events[n].data.fd == sock_udp)
+            else if(fd == sock_udp)
             {
                 std::cout << "UDP connect" << std::endl;
-                m_socket_udp.setSocket(events[n].data.fd);
+                m_socket_udp.setSocket(fd);
                 message.clear();
                 message = m_socket_udp.echo_message(m_server_addr);
                 if(message.compare("-exit") != 0)
@@ -127,7 +82,7 @@ int Server::exec()
             else
             {
                 std::cout << "TCP connect" << std::endl;
-                m_socket_tcp.setSocket(events[n].data.fd);
+                m_socket_tcp.setSocket(fd);
                 message.clear();
                 message = m_socket_tcp.echo_message();
                 if(message.compare("-exit") != 0)
@@ -138,9 +93,30 @@ int Server::exec()
         }
     }
 
+    int epollfd = epoll.getEpollfd();
     close(epollfd);
 
     return 0;
+
+}
+
+int Server::setnonblocking(int socket)
+{
+    int result = -1;
+    int flag = fcntl(socket, F_GETFL);
+    
+    if(flag >= 0)
+    {
+
+        flag = (flag | O_NONBLOCK);
+        if(fcntl(socket, F_SETFL, flag) >= 0)
+        {
+            result = 0;
+            std::cout << "Flag set successful" << std::endl;
+        }
+    }
+
+    return result;
 
 }
 

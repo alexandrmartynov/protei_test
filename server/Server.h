@@ -21,7 +21,6 @@ private:
     void parse(std::string& message, std::list<int> &lst) const;
 
     static const unsigned int MAX_EVENTS = 10;
-    static const unsigned int BUFFER_SIZE = 1024;
     
     InternetAddress m_client_addr;
     InternetAddress m_server_addr;
