@@ -4,14 +4,10 @@
 #include "Epoll.h"
 
 #include <iostream>
-#include <fcntl.h>
-#include <sys/epoll.h>
-
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
 #include <typeinfo>
-#include <algorithm>
 
 #define LOCALHOST "127.0.0.1"
 #define PORT 8080
@@ -27,13 +23,13 @@ int Server::exec()
     Socket_udp m_socket_udp;
     m_socket_udp.create();
     int sock_udp = m_socket_udp.getSocket();
-    setnonblocking(sock_udp);
+    epoll.setNonBlockingSocket(sock_udp);
     m_server_addr.binded(sock_udp);
 
     Socket_tcp m_socket_tcp;
     m_socket_tcp.create();
     int listen_sock = m_socket_tcp.getSocket();
-    setnonblocking(listen_sock);
+    epoll.setNonBlockingSocket(listen_sock);
     m_server_addr.binded(listen_sock);
     m_socket_tcp.listening();
 
@@ -65,7 +61,7 @@ int Server::exec()
                     return EXIT_FAILURE;
                 }
 
-                setnonblocking(sock_tcp);
+                epoll.setNonBlockingSocket(sock_tcp);
                 epoll.addEvent(sock_tcp);
             }
             else if(fd == sock_udp)
@@ -97,23 +93,5 @@ int Server::exec()
     close(epollfd);
 
     return 0;
-
-}
-
-int Server::setnonblocking(int socket)
-{
-    int result = -1;
-    int flag = fcntl(socket, F_GETFL);    
-    if(flag >= 0)
-    {
-
-        flag = (flag | O_NONBLOCK);
-        if(fcntl(socket, F_SETFL, flag) >= 0)
-        {
-            result = 0;
-        }
-    }
-
-    return result;
 
 }

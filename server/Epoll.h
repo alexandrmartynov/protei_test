@@ -11,7 +11,7 @@ public:
     void createEpollfd();
     void createEvents();
     void addEvent(int fd);
-//    int setNonBlockingSocket(int& socket) const;
+    int setNonBlockingSocket(int socket);
     int wait() const;
     int getfd(const int index) const;
     int getEpollfd() const;

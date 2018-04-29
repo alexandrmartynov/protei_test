@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <fcntl.h>
+#include <unistd.h>
+#include <typeinfo>
 
 Epoll::Epoll(unsigned int max_events):
     m_epollfd(0),
@@ -32,6 +34,23 @@ void Epoll::addEvent(int fd)
        std::cout << "failed epoll_ctl" << std::endl;
        return;
     }
+}
+
+int Epoll::setNonBlockingSocket(int socket)
+{
+    int result = -1;
+    int flag = fcntl(socket, F_GETFL);    
+    if(flag >= 0)
+    {
+
+        flag = (flag | O_NONBLOCK);
+        if(fcntl(socket, F_SETFL, flag) >= 0)
+        {
+            result = 0;
+        }
+    }
+
+    return result;
 }
 
 int Epoll::wait() const

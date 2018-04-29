@@ -11,9 +11,6 @@ public:
     ~Server();
     int exec();
 private:
-    void addEvent(int epollfd, int fd) const;
-    int setnonblocking(int socket);
-
     static const unsigned int MAX_EVENTS = 10;
     
     InternetAddress m_client_addr;

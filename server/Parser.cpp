@@ -10,15 +10,15 @@ void Parser::start(const std::string& message)
 
     parse(message);
 
+    std::cout << "Original numbers: ";
     display();
-
-    int sum_numbers = std::accumulate(m_items.begin(), m_items.end(), 0);
-
-    std::cout << "sum of numbers: " << sum_numbers << std::endl;
 
     m_items.sort(std::greater<int>());
-
+    std::cout << "Sorted numbers: ";
     display();
+    
+    int sum_numbers = std::accumulate(m_items.begin(), m_items.end(), 0);
+    std::cout << "sum of numbers: " << sum_numbers << std::endl;
 
     auto minmax = std::minmax_element(m_items.begin(), m_items.end());
     std::cout << "min: " << *minmax.first << " max: " << *minmax.second << std::endl;

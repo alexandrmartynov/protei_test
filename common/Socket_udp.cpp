@@ -10,8 +10,7 @@
 
 #define BUFFER_SIZE 1024
 
-Socket_udp::Socket_udp():
-    m_socket(0)
+Socket_udp::Socket_udp()
 {}
 
 Socket_udp::~Socket_udp()
