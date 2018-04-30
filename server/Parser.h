@@ -11,7 +11,7 @@ public:
     void start(const std::string& message);
 private:
     void display() const;
-    void parse(std::string message);
+    void parse(const std::string& message);
 
     std::list<int> m_items;
 };

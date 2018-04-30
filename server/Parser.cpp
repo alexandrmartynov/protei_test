@@ -24,9 +24,9 @@ void Parser::start(const std::string& message)
     std::cout << "min: " << *minmax.first << " max: " << *minmax.second << std::endl;
 }
 
-void Parser::parse(std::string message)
+void Parser::parse(const std::string& message)
 {
-    std::string::iterator parser = message.begin();
+    std::string::const_iterator parser = message.begin();
     while(parser != message.end())
     {
         if((*parser >= '0') && (*parser <= '9'))
