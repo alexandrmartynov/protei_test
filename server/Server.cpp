@@ -80,6 +80,7 @@ int Server::exec()
                 m_socket_tcp.setSocket(fd);
                 message.clear();
                 message = m_socket_tcp.echo_message();
+                std::cout << "A message:" << message << std::endl;
                 if(message.compare("-exit") != 0)
                 {
                     m_parser.start(message);

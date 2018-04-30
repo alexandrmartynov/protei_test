@@ -96,12 +96,11 @@ void Socket_udp::handle_message(InternetAddress& addr)
         {
             exit = true;
         }
-        else
-        {
-            send(m_message, addr);
-            m_message = receive(addr);
-            std::cout << "echo: " << m_message << std::endl;
-        }
+
+        send(m_message, addr);
+        m_message = receive(addr);
+        std::cout << "echo: " << m_message << std::endl;
+
     }
 }
 
@@ -109,6 +108,7 @@ std::string Socket_udp::echo_message(InternetAddress& addr)
 {
     m_message.clear();
     m_message = receive(addr);
+    std::cout << "m_message echo: " << m_message << std::endl;
     send(m_message, addr);
 
     return m_message;

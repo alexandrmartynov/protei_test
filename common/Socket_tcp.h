@@ -29,6 +29,8 @@ public:
 private:
     std::string getMessage();
 
+    static const std::size_t BUFFER_SIZE = 65536;
+
     int m_socket;
     std::string m_message;
 };

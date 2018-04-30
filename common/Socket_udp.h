@@ -18,7 +18,7 @@ public:
     int getSocket() const;
     void setSocket(int socket);
 
-    void send(const std::string& message,InternetAddress& addr) const;
+    void send(const std::string& message, InternetAddress& addr) const;
     std::string receive(InternetAddress& addr);
     void handle_message(InternetAddress& addr);
     std::string echo_message(InternetAddress& addr);

@@ -8,8 +8,6 @@
 #include <cstring>
 #include <unistd.h>
 
-#define BUFFER_SIZE 1024
-
 Socket_tcp::Socket_tcp():
     m_socket(0),
     m_message({})
@@ -97,8 +95,8 @@ std::string Socket_tcp::receive()
 {
     char* buffer = new char[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
-    m_message.clear();
     std::size_t bytes = read(m_socket, static_cast<void*>(buffer), BUFFER_SIZE);
+    m_message.clear();
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
@@ -121,12 +119,11 @@ void Socket_tcp::handle_message()
         {
             exit = true;
         }
-        else
-        {
-            send(m_message);
-            m_message = receive();
-            std::cout << "echo: " << m_message << std::endl;
-        }
+
+        send(m_message);
+        m_message = receive();
+        std::cout << "echo: " << m_message << std::endl;
+
     } 
 }
 
@@ -134,6 +131,7 @@ std::string Socket_tcp::echo_message()
 {
     m_message.clear();
     m_message = receive();
+    std::cout << "A echo_message:" << m_message <<std::endl;
     send(m_message);
 
     return m_message;   
