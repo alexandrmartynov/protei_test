@@ -6,7 +6,6 @@
 
 int main(int argc, char** argv)
 {
-
     const option options[] {
         { "proto", required_argument, NULL, 't' },
         { "port", required_argument, NULL, 'p' },
@@ -43,7 +42,7 @@ int main(int argc, char** argv)
 
     if(protocol.empty() || port == 0)
     {
-        std::cerr << "Usage " << argv[0] << " [-t TCP/UDP] [-p port]" << std::endl;
+        std::cerr << "Usage " << argv[0] << " [-t tcp/udp] [-p port]" << std::endl;
         return 1;
     }
 

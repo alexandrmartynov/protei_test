@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
-#include <typeinfo>
 
 #define LOCALHOST "127.0.0.1"
 #define PORT 8080
@@ -17,6 +16,7 @@ Server::~Server()
 
 int Server::exec()
 {
+    int status = 0;
     Epoll epoll(MAX_EVENTS);
 
     m_server_addr.setup(PORT);
@@ -39,30 +39,29 @@ int Server::exec()
     epoll.addEvent(sock_udp);
     epoll.addEvent(listen_sock);
     
-    int nfds = 0;
+    std::string message = {};
     while(true)
     {
         m_socket_tcp.setSocket(listen_sock);
         
-        nfds = epoll.wait();
+        int countActivefd = epoll.wait();
 
-        int sock_tcp = 0;
-        std::string message = {};
-        for (int n = 0; n < nfds; ++n)
+        for (int activefd = 0; activefd < countActivefd; ++activefd)
         {
-            int fd = epoll.getfd(n);
+            int fd = epoll.getfd(activefd);
             if(fd == listen_sock)
             {
-                sock_tcp = m_socket_tcp.accepted(m_client_addr);
+                int sock_tcp = m_socket_tcp.accepted(m_client_addr);
                 if(sock_tcp < 0)
                 {
                     std::cout << "accept failed with error " << strerror(errno) << std::endl;
-                    printf("accept failed %d\n", errno);
-                    return EXIT_FAILURE;
+                    status = EXIT_FAILURE;
                 }
-
-                epoll.setNonBlockingSocket(sock_tcp);
-                epoll.addEvent(sock_tcp);
+                else
+                {
+                    epoll.setNonBlockingSocket(sock_tcp);
+                    epoll.addEvent(sock_tcp);
+                }
             }
             else if(fd == sock_udp)
             {
@@ -92,6 +91,6 @@ int Server::exec()
     int epollfd = epoll.getEpollfd();
     close(epollfd);
 
-    return 0;
+    return status;
 
 }

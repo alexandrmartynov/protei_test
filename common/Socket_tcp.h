@@ -10,7 +10,8 @@ class Socket_tcp: public Socket
 {
 public:
     explicit Socket_tcp();
-    virtual ~Socket_tcp();
+    Socket_tcp(const Socket_tcp& temp);
+    ~Socket_tcp();
     virtual void create() override;
     virtual void closeSocket() override;
 
@@ -26,9 +27,10 @@ public:
     void handle_message();
     std::string echo_message();
 private:
-    std::string getMessage() const;
+    std::string getMessage();
 
     int m_socket;
+    std::string m_message;
 };
 
 #endif

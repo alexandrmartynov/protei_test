@@ -8,10 +8,15 @@
 #include <cstring>
 #include <unistd.h>
 
-#define BUFFER_SIZE 1024
-
-Socket_udp::Socket_udp()
+Socket_udp::Socket_udp():
+    m_socket(0),
+    m_message({})
 {}
+
+Socket_udp::Socket_udp(const Socket_udp& temp)
+{
+    this->m_socket = temp.m_socket;
+}
 
 Socket_udp::~Socket_udp()
 {}
@@ -22,13 +27,14 @@ void Socket_udp::create()
     std::cout << "Create socket UDP" << std::endl;
 }
 
-void Socket_udp::send(const std::string& message, InternetAddress& addr) const
+void Socket_udp::send(const std::string& message,InternetAddress& addr) const
 {
     socklen_t addrlen = addr.getAddrSize();
     sockaddr_in& currentAddr = addr.getAddress();
-    char* buffer = new char[BUFFER_SIZE];
-    std::memset(buffer, 0, BUFFER_SIZE);
-    std::size_t bytes = message.copy(buffer, message.size());
+    std::size_t messageLength = message.size();
+    char* buffer = new char[messageLength];
+    std::memset(buffer, 0, messageLength);
+    std::size_t bytes = message.copy(buffer, messageLength);
     std::size_t bytesToWrite = bytes;
     char* currentBufferPosition = buffer;
     while(bytesToWrite > 0)
@@ -66,46 +72,46 @@ std::string Socket_udp::receive(InternetAddress& addr)
                                  reinterpret_cast<sockaddr*>(&currentAddr),
                                  &addrlen
                                 );
-    std::string message = {};
+    m_message.clear();
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
-        message.assign(buffer);
+        m_message.assign(buffer);
     }
 
     delete[] buffer;
 
-    return message;
+    return m_message;
 
 }
 
 void Socket_udp::handle_message(InternetAddress& addr)
 {
-    std::string message = {};
+    m_message.clear();
     bool exit = false;
     while(!exit)
     {
-        message = getMessage();
-        if(message.compare("-exit") == 0)
+        m_message = getMessage();
+        if(m_message.compare("-exit") == 0)
         {
             exit = true;
         }
         else
         {
-            send(message, addr);
-            message = receive(addr);
-            std::cout << "echo: " << message << std::endl;
+            send(m_message, addr);
+            m_message = receive(addr);
+            std::cout << "echo: " << m_message << std::endl;
         }
     }
 }
 
 std::string Socket_udp::echo_message(InternetAddress& addr)
 {
-    std::string message = {};
-    message = receive(addr);
-    send(message, addr);
+    m_message.clear();
+    m_message = receive(addr);
+    send(m_message, addr);
 
-    return message;
+    return m_message;
 }
 
 int Socket_udp::getSocket() const
@@ -123,12 +129,12 @@ void Socket_udp::closeSocket()
     close(m_socket);
 }
 
-std::string Socket_udp::getMessage() const
+std::string Socket_udp::getMessage()
 {
-    std::string message = {};
+    m_message.clear();
     std::cout << "For disconnect, please write -exit\n";
     std::cout << "Write message: ";
-    std::cin >> message;
+    std::cin >> m_message;
 
-    return message;
+    return m_message;
 }

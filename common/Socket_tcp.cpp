@@ -11,8 +11,14 @@
 #define BUFFER_SIZE 1024
 
 Socket_tcp::Socket_tcp():
-    m_socket(0)
+    m_socket(0),
+    m_message({})
 {}
+
+Socket_tcp::Socket_tcp(const Socket_tcp& temp)
+{
+    this->m_socket = temp.m_socket;
+}
 
 Socket_tcp::~Socket_tcp()
 {}
@@ -66,9 +72,10 @@ int Socket_tcp::accepted(InternetAddress& addr)
 
 void Socket_tcp::send(const std::string& message) const
 {
-    char* buffer = new char[BUFFER_SIZE];
-    std::memset(buffer, 0, BUFFER_SIZE);
-    std::size_t bytes = message.copy(buffer, message.size());
+    std::size_t messageLength = message.size();
+    char* buffer = new char[messageLength];
+    std::memset(buffer, 0, messageLength);
+    std::size_t bytes = message.copy(buffer, messageLength);
     std::size_t bytesToWrite = bytes;
     char* currentBufferPosition = buffer;
     while(bytesToWrite > 0)
@@ -89,58 +96,57 @@ void Socket_tcp::send(const std::string& message) const
 std::string Socket_tcp::receive()
 {
     char* buffer = new char[BUFFER_SIZE];
-    std::memset(buffer, 0, BUFFER_SIZE);  
+    std::memset(buffer, 0, BUFFER_SIZE);
+    m_message.clear();
     std::size_t bytes = read(m_socket, static_cast<void*>(buffer), BUFFER_SIZE);
-    std::string message = {};
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
-        message.assign(buffer);
+        m_message.assign(buffer);
     }
 
     delete[] buffer;
 
-    return message;
+    return m_message;
 }
 
 void Socket_tcp::handle_message()
 {
-    std::string message = {};
+    m_message.clear();
     bool exit = false;
     while(!exit)
     {
-        message = getMessage();
-        if(message.compare("-exit") == 0)
+        m_message = getMessage();
+        if(m_message.compare("-exit") == 0)
         {
             exit = true;
         }
         else
         {
-            send(message);
-            message = receive();
-            std::cout << "echo: " << message << std::endl;
+            send(m_message);
+            m_message = receive();
+            std::cout << "echo: " << m_message << std::endl;
         }
     } 
 }
 
 std::string Socket_tcp::echo_message()
 {
-    std::string message = {};
-    message = receive();
-    send(message);
+    m_message.clear();
+    m_message = receive();
+    send(m_message);
 
-    return message;   
+    return m_message;   
 }
 
-std::string Socket_tcp::getMessage() const
+std::string Socket_tcp::getMessage()
 {
-    std::string message = {};
-    message.clear();
+    m_message.clear();
     std::cout << "For disconnect, please write -exit\n";
     std::cout << "Write message: ";
-    std::cin >> message;
+    std::cin >> m_message;
 
-    return message;
+    return m_message;
 }
 
 void Socket_tcp::setSocket(int socket)
