@@ -13,6 +13,11 @@
 
 #define LOCALHOST "127.0.0.1"
 
+InternetAddress::InternetAddress(const InternetAddress& obj)
+{
+    this->m_addr = obj.m_addr;
+}
+
 void InternetAddress::setup(int port)
 {
     socklen_t addrlen = getAddrSize();

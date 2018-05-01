@@ -13,10 +13,10 @@ public:
 
     virtual void create() override;
 
-    void send(const std::string& message, InternetAddress& addr) const;
-    std::string receive(InternetAddress& addr);
-    void handle_message(InternetAddress& addr);
-    std::string echo_message(InternetAddress& addr);
+    void send(const std::string& message);
+    std::string receive();
+    void handle_message();
+    std::string echo_message();
 private:
     static const std::size_t BUFFER_SIZE = 65536;
 };

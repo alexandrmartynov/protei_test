@@ -1,7 +1,6 @@
 #include "Server.h"
 #include "Socket_tcp.h"
 #include "Socket_udp.h"
-#include "Epoll.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -19,18 +18,12 @@ int Server::exec()
     int status = 0;
     Epoll epoll(MAX_EVENTS);
 
-    m_server_addr.setup(PORT);
-    Socket_udp m_socket_udp;
-    m_socket_udp.create();
-    int sock_udp = m_socket_udp.getSocket();
-    epoll.setNonBlockingSocket(sock_udp);
-    m_server_addr.binded(sock_udp);
-
     Socket_tcp m_socket_tcp;
+    m_socket_tcp.setup(PORT);
     m_socket_tcp.create();
+    m_socket_tcp.bindSocket();
     int listen_sock = m_socket_tcp.getSocket();
     epoll.setNonBlockingSocket(listen_sock);
-    m_server_addr.binded(listen_sock);
     m_socket_tcp.listening();
 
     epoll.createEvents();
@@ -68,7 +61,7 @@ int Server::exec()
                 std::cout << "UDP connect" << std::endl;
                 m_socket_udp.setSocket(fd);
                 message.clear();
-                message = m_socket_udp.echo_message(m_server_addr);
+                message = m_socket_udp.echo_message();
                 if((message.compare("-exit") != 0) && (!message.empty()))
                 {
                     m_parser.start(message);

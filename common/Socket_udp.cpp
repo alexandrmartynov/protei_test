@@ -19,11 +19,8 @@ void Socket_udp::create()
     std::cout << "Create socket UDP" << std::endl;
 }
 
-void Socket_udp::send(const std::string& message,InternetAddress& addr) const
+void Socket_udp::send(const std::string& message)
 {
-    socklen_t addrlen = addr.getAddrSize();
-    sockaddr_in& currentAddr = addr.getAddress();
-
     std::size_t bytes = message.size();
     std::size_t bytesToWrite = bytes;
     const char* currentPosition = message.c_str();
@@ -34,8 +31,8 @@ void Socket_udp::send(const std::string& message,InternetAddress& addr) const
                                           reinterpret_cast<const void*>(currentPosition),
                                           bytesToWrite,
                                           0,
-                                          reinterpret_cast<sockaddr*>(&currentAddr),
-                                          addrlen
+                                          reinterpret_cast<sockaddr*>(&m_addr),
+                                          m_addrlen
                                          );
         if(bytesWritten <= bytesToWrite)
         {
@@ -45,10 +42,8 @@ void Socket_udp::send(const std::string& message,InternetAddress& addr) const
     }
 }
 
-std::string Socket_udp::receive(InternetAddress& addr)
+std::string Socket_udp::receive()
 {
-    socklen_t addrlen = addr.getAddrSize();
-    sockaddr_in& currentAddr = addr.getAddress();
     char buffer[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = recvfrom(
@@ -56,8 +51,8 @@ std::string Socket_udp::receive(InternetAddress& addr)
                                  static_cast<void*>(buffer),
                                  BUFFER_SIZE,
                                  0,
-                                 reinterpret_cast<sockaddr*>(&currentAddr),
-                                 &addrlen
+                                 reinterpret_cast<sockaddr*>(&m_addr),
+                                 &m_addrlen
                                 );
     m_message.clear();
     if(bytes > 0)
@@ -70,7 +65,7 @@ std::string Socket_udp::receive(InternetAddress& addr)
 
 }
 
-void Socket_udp::handle_message(InternetAddress& addr)
+void Socket_udp::handle_message()
 {
     m_message.clear();
     bool exit = false;
@@ -82,18 +77,18 @@ void Socket_udp::handle_message(InternetAddress& addr)
             exit = true;
         }
 
-        send(m_message, addr);
-        m_message = receive(addr);
+        send(m_message);
+        m_message = receive();
         std::cout << "echo: " << m_message << std::endl;
 
     }
 }
 
-std::string Socket_udp::echo_message(InternetAddress& addr)
+std::string Socket_udp::echo_message()
 {
     m_message.clear();
-    m_message = receive(addr);
-    send(m_message, addr);
+    m_message = receive();
+    send(m_message);
 
     return m_message;
 }

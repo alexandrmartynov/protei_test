@@ -8,9 +8,11 @@
 #include <cstring>
 #include <unistd.h>
 
-Socket_tcp::Socket_tcp(const Socket_tcp& temp)
+Socket_tcp::Socket_tcp(const Socket_tcp& obj)
 {
-    this->m_socket = temp.m_socket;
+    this->m_socket = obj.m_socket;
+    this->m_addr = obj.m_addr;
+    this->m_addrlen = obj.m_addrlen;
 }
 
 void Socket_tcp::create()
@@ -29,11 +31,9 @@ void Socket_tcp::listening() const
     }
 }
 
-void Socket_tcp::connected(InternetAddress& addr) const
+void Socket_tcp::connected() const
 {
-    socklen_t addrlen = addr.getAddrSize();
-    sockaddr_in& currentAddr = addr.getAddress();
-    int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&currentAddr), addrlen);
+    int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&m_addr), m_addrlen);
     if(connected < 0)
     {
         std::cout << "Failed connection with error " << strerror(errno) << std::endl;
@@ -43,8 +43,8 @@ void Socket_tcp::connected(InternetAddress& addr) const
 
 int Socket_tcp::accepted(InternetAddress& addr)
 {
-    socklen_t addrlen = addr.getAddrSize();
     sockaddr_in& currentAddr = addr.getAddress();
+    socklen_t addrlen = sizeof(currentAddr);
     int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), &addrlen);
     if(newSocket < 0)
     {

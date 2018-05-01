@@ -2,20 +2,18 @@
 #define SOCKETTCP_H
 
 #include "Socket.h"
-#include "InternetAddress.h"
-
 #include <string>
 
 class Socket_tcp: public Socket
 {
 public:
     explicit Socket_tcp() = default;
-    Socket_tcp(const Socket_tcp& temp);
+    Socket_tcp(const Socket_tcp& obj);
     ~Socket_tcp() {};
     virtual void create() override;
 
     void listening() const;
-    void connected(InternetAddress& addr) const;
+    void connected() const;
     int accepted(InternetAddress& addr);
     
     void send(const std::string& message) const;
