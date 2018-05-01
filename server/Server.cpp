@@ -69,7 +69,7 @@ int Server::exec()
                 m_socket_udp.setSocket(fd);
                 message.clear();
                 message = m_socket_udp.echo_message(m_server_addr);
-                if(message.compare("-exit") != 0)
+                if((message.compare("-exit") != 0) && (!message.empty()))
                 {
                     m_parser.start(message);
                 }
@@ -79,9 +79,8 @@ int Server::exec()
                 std::cout << "TCP connect" << std::endl;
                 m_socket_tcp.setSocket(fd);
                 message.clear();
-                message = m_socket_tcp.echo_message();
-                std::cout << "A message:" << message << std::endl;
-                if(message.compare("-exit") != 0)
+                message = m_socket_tcp.echo_message(); 
+                if((message.compare("-exit") != 0) && (!message.empty()))
                 {
                     m_parser.start(message);
                 }

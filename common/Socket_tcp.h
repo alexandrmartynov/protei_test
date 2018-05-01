@@ -9,11 +9,10 @@
 class Socket_tcp: public Socket
 {
 public:
-    explicit Socket_tcp();
+    explicit Socket_tcp() = default;
     Socket_tcp(const Socket_tcp& temp);
-    ~Socket_tcp();
+    ~Socket_tcp() {};
     virtual void create() override;
-    virtual void closeSocket() override;
 
     void listening() const;
     void connected(InternetAddress& addr) const;
@@ -22,17 +21,11 @@ public:
     void send(const std::string& message) const;
     std::string receive();
 
-    void setSocket(int socket);
-    int getSocket() const;
     void handle_message();
     std::string echo_message();
 private:
-    std::string getMessage();
-
     static const std::size_t BUFFER_SIZE = 65536;
-
-    int m_socket;
-    std::string m_message;
+    static const unsigned int MAX_CLIENT = 1;
 };
 
 #endif

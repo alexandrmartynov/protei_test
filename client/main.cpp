@@ -40,28 +40,30 @@ int main(int argc, char** argv)
         opt = getopt_long(argc, argv, "t:p:", options, nullptr);
     }
 
+    int result = 0;
     if(protocol.empty() || port == 0)
     {
         std::cerr << "Usage " << argv[0] << " [-t tcp/udp] [-p port]" << std::endl;
-        return 1;
-    }
-
-    std::cout << "Protocol: " << protocol << " port: " << port << std::endl;
-
-    int result = 1;
-    if(protocol == "tcp")
-    {
-        Client_tcp client;
-        result = client.exec(port);
-    }
-    else if(protocol == "udp")
-    {
-        Client_udp client;
-        result = client.exec(port);
+        result = 1;
     }
     else
     {
-        std::cout << "wrong protocol type!" << std::endl;
+        std::cout << "Protocol: " << protocol << " port: " << port << std::endl;
+
+        if(protocol == "tcp")
+        {
+            Client_tcp client;
+            result = client.exec(port);
+        }
+        else if(protocol == "udp")
+        {
+            Client_udp client;
+            result = client.exec(port);
+        }
+        else
+        {
+            std::cout << "wrong protocol type!" << std::endl;
+        }
     }
 
     return result;
