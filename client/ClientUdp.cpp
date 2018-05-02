@@ -4,9 +4,8 @@
 int ClientUdp::exec(int port)
 {
     SocketUdp socket;
-    socket.setup(port);
-    socket.handle_message();
-    socket.closeSocket();
+    socket.setupAddress(port);
+    socket.dialog();
 
     return 0;
 }

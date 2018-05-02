@@ -1,6 +1,5 @@
 #include "InternetAddress.h"
 
-#include <cerrno>
 #include <iostream>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -9,7 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <typeinfo>
-#include <exception>
+#include <cerrno>
 
 #define LOCALHOST "127.0.0.1"
 
@@ -28,8 +27,7 @@ void InternetAddress::setup(int port)
     int convert = inet_aton(LOCALHOST, reinterpret_cast<in_addr*>(&m_addr.sin_addr.s_addr));
     if(convert == 0)
     {
-        std::cout << "inet_aton() failed" << std::endl;
-        throw(strerror(errno));       
+        std::cout << "inet_aton() failed with error " << strerror(errno) << std::endl;     
     }
 }
 
@@ -37,8 +35,7 @@ void InternetAddress::binded(const int socket)
 {
     if(bind(socket, reinterpret_cast<sockaddr*>(&m_addr), sizeof(m_addr)) < 0)
     {
-        std::cout << "Bind failed" << std::endl;
-        throw(strerror(errno));
+        std::cout << "Bind failed with error " << strerror(errno) <<  std::endl;
     }
 }
 

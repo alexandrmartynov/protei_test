@@ -15,6 +15,34 @@ SocketUdp::SocketUdp()
     std::cout << "Create socket UDP" << std::endl;    
 }
 
+void SocketUdp::dialog()
+{
+    std::string message = {};
+    bool exit = false;
+    while(!exit)
+    {
+        message = getMessage();
+        if(message.compare("-exit") == 0)
+        {
+            exit = true;
+        }
+
+        send(message);
+        message = receive();
+        std::cout << "echo: " << message << std::endl;
+
+    }
+}
+
+std::string SocketUdp::echo()
+{
+    std::string message = {};
+    message = receive();
+    send(message);
+
+    return message;
+}
+
 void SocketUdp::send(const std::string& message) const
 {
     std::size_t bytesToWrite = message.size();
@@ -60,30 +88,4 @@ std::string SocketUdp::receive()
 
 }
 
-void SocketUdp::handle_message()
-{
-    std::string message = {};
-    bool exit = false;
-    while(!exit)
-    {
-        message = getMessage();
-        if(message.compare("-exit") == 0)
-        {
-            exit = true;
-        }
 
-        send(message);
-        message = receive();
-        std::cout << "echo: " << message << std::endl;
-
-    }
-}
-
-std::string SocketUdp::echo_message()
-{
-    std::string message = {};
-    message = receive();
-    send(message);
-
-    return message;
-}

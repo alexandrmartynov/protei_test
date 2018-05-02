@@ -22,14 +22,14 @@ Server::~Server()
 int Server::exec()
 {
     SocketTcp socketTcp;
-    socketTcp.setup(PORT);
+    socketTcp.setupAddress(PORT);
     socketTcp.bindSocket();
     socketTcp.setNonBlockingSocket();
     socketTcp.listening();
     int listenSocket = socketTcp.getSocket();
 
     SocketUdp socketUdp;
-    socketUdp.setup(PORT);
+    socketUdp.setupAddress(PORT);
     socketUdp.bindSocket();
     socketUdp.setNonBlockingSocket();
     int currentSocketUdp = socketUdp.getSocket();
@@ -45,20 +45,20 @@ int Server::exec()
         int countActivefd = m_epoll->wait();
         for (int activefd = 0; activefd < countActivefd; ++activefd)
         {
-            int fd = m_epoll->getfd(activefd);
-            if(fd == listenSocket)
+            int currentfd = m_epoll->getfd(activefd);
+            if(currentfd == listenSocket)
             {
                 int newSocketTcp = socketTcp.accepted(m_client_addr);
                 socketTcp.setSocket(newSocketTcp);
                 socketTcp.setNonBlockingSocket();
                 m_epoll->addEvent(newSocketTcp);
             }
-            else if(fd == currentSocketUdp)
+            else if(currentfd == currentSocketUdp)
             {
                 std::cout << "UDP connect" << std::endl;
-                socketUdp.setSocket(fd);
+                socketUdp.setSocket(currentfd);
                 std::string message = {};
-                message = socketUdp.echo_message();
+                message = socketUdp.echo();
                 if((message.compare("-exit") != 0) && (!message.empty()))
                 {
                     m_parser.start(message);
@@ -67,9 +67,9 @@ int Server::exec()
             else
             {
                 std::cout << "TCP connect" << std::endl;
-                socketTcp.setSocket(fd);
+                socketTcp.setSocket(currentfd);
                 std::string message = {};
-                message = socketTcp.echo_message(); 
+                message = socketTcp.echo(); 
                 if((message.compare("-exit") != 0) && (!message.empty()))
                 {
                     m_parser.start(message);

@@ -4,11 +4,9 @@
 int ClientTcp::exec(int port)
 { 
     SocketTcp socket;
-    socket.setup(port);
+    socket.setupAddress(port);
     socket.connected();
-    socket.handle_message();
-    socket.closeSocket();
+    socket.dialog();
 
     return 0;
-
 }

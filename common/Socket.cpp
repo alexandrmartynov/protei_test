@@ -1,5 +1,7 @@
 #include "Socket.h"
 
+#include <cerrno>
+#include <cstring>
 #include <unistd.h>
 #include <fcntl.h>
 #include <iostream>
@@ -19,12 +21,7 @@ void Socket::setSocket(int socket)
     m_socket = socket;
 }
 
-void Socket::closeSocket() const
-{
-    close(m_socket);
-}
-
-void Socket::setup(int port)
+void Socket::setupAddress(int port)
 {
     m_addr.setup(port);
     m_addrlen = sizeof(m_addr);
@@ -37,7 +34,6 @@ void Socket::bindSocket()
 
 void Socket::setNonBlockingSocket()
 {
-
     int flag = fcntl(m_socket, F_GETFL);    
     if(flag >= 0)
     {
@@ -45,7 +41,8 @@ void Socket::setNonBlockingSocket()
         flag = (flag | O_NONBLOCK);
         if(fcntl(m_socket, F_SETFL, flag) < 0)
         {
-            std::cout << "Set nonblocking socket failed" << std::endl;
+            std::cout << "Set nonblocking socket failed with error "
+                      << strerror(errno) << std::endl;
         }
     }
 }

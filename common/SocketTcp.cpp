@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
-#include <exception>
 
 SocketTcp::SocketTcp()
 {
@@ -21,8 +20,7 @@ void SocketTcp::listening() const
     int connect = listen(m_socket, MAX_CLIENT);
     if(connect < 0)
     {
-        std::cout << "Listen failed" << std::endl;
-        throw(strerror(errno));
+        std::cout << "Listen failed with error " << strerror(errno) << std::endl;
     }
 }
 
@@ -31,20 +29,18 @@ void SocketTcp::connected() const
     int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&m_addr), m_addrlen);
     if(connected < 0)
     {
-        std::cout << "Failed connection with error" << std::endl;
-        throw(strerror(errno));
+        std::cout << "Failed connection with error " << strerror(errno) << std::endl;
     }
 }
 
 int SocketTcp::accepted(InternetAddress& addr)
 {
     sockaddr_in& currentAddr = addr.getAddress();
-    socklen_t addrlen = sizeof(currentAddr);
+    socklen_t addrlen = addr.getAddrSize();
     int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), &addrlen);
     if(newSocket < 0)
     {
-        std::cout << "Accept failed" << std::endl;
-        throw(strerror(errno));
+        std::cout << "Accept failed with error " << strerror(errno) << std::endl;
     }
     else
     {
@@ -53,6 +49,34 @@ int SocketTcp::accepted(InternetAddress& addr)
 
     return newSocket;
 
+}
+
+void SocketTcp::dialog()
+{
+    std::string message = {};
+    bool exit = false;
+    while(!exit)
+    {
+        message = getMessage();
+        if(message.compare("-exit") == 0)
+        {
+            exit = true;
+        }
+
+        send(message);
+        message = receive();
+        std::cout << "echo: " << message << std::endl;
+
+    } 
+}
+
+std::string SocketTcp::echo()
+{
+    std::string message = {};
+    message = receive();
+    send(message);
+
+    return message;   
 }
 
 void SocketTcp::send(const std::string& message) const
@@ -90,30 +114,4 @@ std::string SocketTcp::receive()
     return message;
 }
 
-void SocketTcp::handle_message()
-{
-    std::string message = {};
-    bool exit = false;
-    while(!exit)
-    {
-        message = getMessage();
-        if(message.compare("-exit") == 0)
-        {
-            exit = true;
-        }
 
-        send(message);
-        message = receive();
-        std::cout << "echo: " << message << std::endl;
-
-    } 
-}
-
-std::string SocketTcp::echo_message()
-{
-    std::string message = {};
-    message = receive();
-    send(message);
-
-    return message;   
-}
