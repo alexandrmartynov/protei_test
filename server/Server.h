@@ -5,7 +5,6 @@
 #include "Parser.h"
 #include "Epoll.h"
 
-
 class Server
 {
 public:
@@ -14,11 +13,11 @@ public:
     int exec();
 private:
     static const unsigned int MAX_EVENTS = 10;
-    
-    InternetAddress m_client_addr;
+    static const unsigned int PORT = 8080;
 
     Epoll* m_epoll;
     Parser m_parser;
+    InternetAddress m_client_addr;
 };
 
 #endif

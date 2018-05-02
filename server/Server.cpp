@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #define LOCALHOST "127.0.0.1"
-#define PORT 8080
 
 Server::Server():
     m_epoll(new Epoll(MAX_EVENTS))
