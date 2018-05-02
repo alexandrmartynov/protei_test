@@ -1,4 +1,4 @@
-#include "Socket_tcp.h"
+#include "SocketTcp.h"
 
 #include <netinet/in.h>
 #include <iostream>
@@ -7,49 +7,48 @@
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
+#include <exception>
 
-Socket_tcp::Socket_tcp(const Socket_tcp& obj)
+SocketTcp::~SocketTcp()
 {
-    this->m_socket = obj.m_socket;
-    this->m_addr = obj.m_addr;
-    this->m_addrlen = obj.m_addrlen;
+    close(m_socket);
 }
 
-void Socket_tcp::create()
+void SocketTcp::createSocket()
 {
     m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     std::cout << "Create socket TCP" << std::endl;
 }
 
-void Socket_tcp::listening() const
+void SocketTcp::listening() const
 {
     int connect = listen(m_socket, MAX_CLIENT);
     if(connect < 0)
     {
-        std::cout << "Listen failed with error " << strerror(errno) << std::endl;
-        return;
+        std::cout << "Listen failed" << std::endl;
+        throw(strerror(errno));
     }
 }
 
-void Socket_tcp::connected() const
+void SocketTcp::connected() const
 {
     int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&m_addr), m_addrlen);
     if(connected < 0)
     {
-        std::cout << "Failed connection with error " << strerror(errno) << std::endl;
-        return;
+        std::cout << "Failed connection with error" << std::endl;
+        throw(strerror(errno));
     }
 }
 
-int Socket_tcp::accepted(InternetAddress& addr)
+int SocketTcp::accepted(InternetAddress& addr)
 {
     sockaddr_in& currentAddr = addr.getAddress();
     socklen_t addrlen = sizeof(currentAddr);
     int newSocket = accept(m_socket, reinterpret_cast<sockaddr*>(&currentAddr), &addrlen);
     if(newSocket < 0)
     {
-        std::cout << "Accept failed with error" << strerror(errno) << std::endl;
-        newSocket = EXIT_FAILURE;
+        std::cout << "Accept failed" << std::endl;
+        throw(strerror(errno));
     }
     else
     {
@@ -60,10 +59,9 @@ int Socket_tcp::accepted(InternetAddress& addr)
 
 }
 
-void Socket_tcp::send(const std::string& message) const
+void SocketTcp::send(const std::string& message) const
 {
-    std::size_t bytes = message.size();
-    std::size_t bytesToWrite = bytes;
+    std::size_t bytesToWrite = message.size();
     const char* currentPosition = message.c_str();
     while(bytesToWrite > 0)
     {
@@ -80,46 +78,46 @@ void Socket_tcp::send(const std::string& message) const
     }
 }
 
-std::string Socket_tcp::receive()
+std::string SocketTcp::receive()
 {
     char buffer[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = read(m_socket, static_cast<void*>(buffer), BUFFER_SIZE);
     
-    m_message.clear();
+    std::string message = {};
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
-        m_message.assign(buffer);
+        message.assign(buffer);
     }
 
-    return m_message;
+    return message;
 }
 
-void Socket_tcp::handle_message()
+void SocketTcp::handle_message()
 {
-    m_message.clear();
+    std::string message = {};
     bool exit = false;
     while(!exit)
     {
-        m_message = getMessage();
-        if(m_message.compare("-exit") == 0)
+        message = getMessage();
+        if(message.compare("-exit") == 0)
         {
             exit = true;
         }
 
-        send(m_message);
-        m_message = receive();
-        std::cout << "echo: " << m_message << std::endl;
+        send(message);
+        message = receive();
+        std::cout << "echo: " << message << std::endl;
 
     } 
 }
 
-std::string Socket_tcp::echo_message()
+std::string SocketTcp::echo_message()
 {
-    m_message.clear();
-    m_message = receive();
-    send(m_message);
+    std::string message = {};
+    message = receive();
+    send(message);
 
-    return m_message;   
+    return message;   
 }

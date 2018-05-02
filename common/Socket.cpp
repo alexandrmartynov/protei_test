@@ -1,6 +1,7 @@
 #include "Socket.h"
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <iostream>
 
 int Socket::getSocket() const
@@ -29,14 +30,29 @@ void Socket::bindSocket()
     m_addr.binded(m_socket);
 }
 
-std::string Socket::getMessage()
+void Socket::setNonBlockingSocket()
 {
-    m_message.clear();
+
+    int flag = fcntl(m_socket, F_GETFL);    
+    if(flag >= 0)
+    {
+
+        flag = (flag | O_NONBLOCK);
+        if(fcntl(m_socket, F_SETFL, flag) < 0)
+        {
+            std::cout << "Set nonblocking socket failed" << std::endl;
+        }
+    }
+}
+
+std::string Socket::getMessage() const
+{
+    std::string message = {};
     std::cout << "For disconnect, please write -exit\n";
     std::cout << "Write message: ";
-    std::cin >> m_message;
+    std::cin >> message;
 
-    return m_message;
+    return message;
 }
 
 

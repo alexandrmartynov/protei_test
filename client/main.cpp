@@ -1,5 +1,5 @@
-#include "Client_tcp.h"
-#include "Client_udp.h"
+#include "ClientTcp.h"
+#include "ClientUdp.h"
 
 #include <getopt.h>
 #include <iostream>
@@ -52,12 +52,12 @@ int main(int argc, char** argv)
 
         if(protocol == "tcp")
         {
-            Client_tcp client;
+            ClientTcp client;
             result = client.exec(port);
         }
         else if(protocol == "udp")
         {
-            Client_udp client;
+            ClientUdp client;
             result = client.exec(port);
         }
         else

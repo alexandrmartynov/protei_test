@@ -4,13 +4,12 @@
 #include "Socket.h"
 #include <string>
 
-class Socket_tcp: public Socket
+class SocketTcp: public Socket
 {
 public:
-    explicit Socket_tcp() = default;
-    Socket_tcp(const Socket_tcp& obj);
-    ~Socket_tcp() {};
-    virtual void create() override;
+    explicit SocketTcp() = default;
+    ~SocketTcp();
+    virtual void createSocket() override;
 
     void listening() const;
     void connected() const;

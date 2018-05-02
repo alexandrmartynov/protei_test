@@ -1,4 +1,4 @@
-#include "Socket_udp.h"
+#include "SocketUdp.h"
 
 #include <iostream>
 #include <cstdio>
@@ -8,21 +8,20 @@
 #include <cstring>
 #include <unistd.h>
 
-Socket_udp::Socket_udp(const Socket_udp& temp)
+SocketUdp::~SocketUdp()
 {
-    this->m_socket = temp.m_socket;
+    close(m_socket);
 }
 
-void Socket_udp::create()
+void SocketUdp::createSocket()
 {
     m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     std::cout << "Create socket UDP" << std::endl;
 }
 
-void Socket_udp::send(const std::string& message)
+void SocketUdp::send(const std::string& message) const
 {
-    std::size_t bytes = message.size();
-    std::size_t bytesToWrite = bytes;
+    std::size_t bytesToWrite = message.size();
     const char* currentPosition = message.c_str();
     while(bytesToWrite > 0)
     {
@@ -31,7 +30,7 @@ void Socket_udp::send(const std::string& message)
                                           reinterpret_cast<const void*>(currentPosition),
                                           bytesToWrite,
                                           0,
-                                          reinterpret_cast<sockaddr*>(&m_addr),
+                                          reinterpret_cast<const sockaddr*>(&m_addr),
                                           m_addrlen
                                          );
         if(bytesWritten <= bytesToWrite)
@@ -42,7 +41,7 @@ void Socket_udp::send(const std::string& message)
     }
 }
 
-std::string Socket_udp::receive()
+std::string SocketUdp::receive()
 {
     char buffer[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
@@ -54,41 +53,41 @@ std::string Socket_udp::receive()
                                  reinterpret_cast<sockaddr*>(&m_addr),
                                  &m_addrlen
                                 );
-    m_message.clear();
+    std::string message = {};
     if(bytes > 0)
     {
         buffer[bytes] = '\0';
-        m_message.assign(buffer);
+        message.assign(buffer);
     }
 
-    return m_message;
+    return message;
 
 }
 
-void Socket_udp::handle_message()
+void SocketUdp::handle_message()
 {
-    m_message.clear();
+    std::string message = {};
     bool exit = false;
     while(!exit)
     {
-        m_message = getMessage();
-        if(m_message.compare("-exit") == 0)
+        message = getMessage();
+        if(message.compare("-exit") == 0)
         {
             exit = true;
         }
 
-        send(m_message);
-        m_message = receive();
-        std::cout << "echo: " << m_message << std::endl;
+        send(message);
+        message = receive();
+        std::cout << "echo: " << message << std::endl;
 
     }
 }
 
-std::string Socket_udp::echo_message()
+std::string SocketUdp::echo_message()
 {
-    m_message.clear();
-    m_message = receive();
-    send(m_message);
+    std::string message = {};
+    message = receive();
+    send(message);
 
-    return m_message;
+    return message;
 }

@@ -8,10 +8,7 @@ class Epoll
 public:
     explicit Epoll(unsigned int max_events);
     ~Epoll();
-    void createEpollfd();
-    void createEvents();
     void addEvent(int fd);
-    int setNonBlockingSocket(int socket);
     int wait() const;
     int getfd(const int index) const;
     int getEpollfd() const;

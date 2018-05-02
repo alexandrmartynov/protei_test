@@ -8,7 +8,7 @@
 class Server
 {
 public:
-    explicit Server() = default;
+    explicit Server();
     ~Server();
     int exec();
 private:
@@ -16,7 +16,7 @@ private:
     
     InternetAddress m_client_addr;
 
-    Epoll m_epoll;
+    Epoll* m_epoll;
     Parser m_parser;
 };
 

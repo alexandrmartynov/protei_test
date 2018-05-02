@@ -4,16 +4,15 @@
 #include "Socket.h"
 #include "InternetAddress.h"
 
-class Socket_udp: public Socket
+class SocketUdp: public Socket
 {
 public:
-    explicit Socket_udp() = default;
-    Socket_udp(const Socket_udp& temp);
-    ~Socket_udp() {};
+    explicit SocketUdp() = default;
+    ~SocketUdp();
 
-    virtual void create() override;
+    virtual void createSocket() override;
 
-    void send(const std::string& message);
+    void send(const std::string& message) const;
     std::string receive();
     void handle_message();
     std::string echo_message();
