@@ -9,15 +9,10 @@
 #include <cstring>
 #include <unistd.h>
 
-SocketUdp::~SocketUdp()
-{
-    close(m_socket);
-}
-
-void SocketUdp::createSocket()
+SocketUdp::SocketUdp()
 {
     m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    std::cout << "Create socket UDP" << std::endl;
+    std::cout << "Create socket UDP" << std::endl;    
 }
 
 void SocketUdp::send(const std::string& message) const

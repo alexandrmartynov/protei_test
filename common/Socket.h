@@ -6,7 +6,10 @@
 class Socket
 {
 public:
-    virtual void createSocket() = 0;
+    Socket() = default;
+    ~Socket();
+    Socket(const Socket& obj) = delete;
+    Socket& operator=(const Socket& obj) = delete;
     void setup(int port);
     void bindSocket();
     void setNonBlockingSocket();

@@ -7,9 +7,7 @@
 class SocketTcp: public Socket
 {
 public:
-    explicit SocketTcp() = default;
-    ~SocketTcp();
-    virtual void createSocket() override;
+    explicit SocketTcp();
 
     void listening() const;
     void connected() const;

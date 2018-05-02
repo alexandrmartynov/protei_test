@@ -4,6 +4,11 @@
 #include <fcntl.h>
 #include <iostream>
 
+Socket::~Socket()
+{
+    close(m_socket);
+}
+
 int Socket::getSocket() const
 {
     return m_socket;

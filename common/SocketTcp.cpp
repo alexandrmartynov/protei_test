@@ -10,12 +10,7 @@
 #include <unistd.h>
 #include <exception>
 
-SocketTcp::~SocketTcp()
-{
-    close(m_socket);
-}
-
-void SocketTcp::createSocket()
+SocketTcp::SocketTcp()
 {
     m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     std::cout << "Create socket TCP" << std::endl;

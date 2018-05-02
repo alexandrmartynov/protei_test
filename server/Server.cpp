@@ -23,7 +23,6 @@ int Server::exec()
 {
     SocketTcp socketTcp;
     socketTcp.setup(PORT);
-    socketTcp.createSocket();
     socketTcp.bindSocket();
     socketTcp.setNonBlockingSocket();
     socketTcp.listening();
@@ -31,7 +30,6 @@ int Server::exec()
 
     SocketUdp socketUdp;
     socketUdp.setup(PORT);
-    socketUdp.createSocket();
     socketUdp.bindSocket();
     socketUdp.setNonBlockingSocket();
     int currentSocketUdp = socketUdp.getSocket();
