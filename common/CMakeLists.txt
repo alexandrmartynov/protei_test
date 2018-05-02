@@ -7,3 +7,4 @@ file(GLOB SOURCE "*.cpp")
 add_library(common STATIC ${SOURCE})
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
