@@ -15,12 +15,12 @@ Server::Server():
 {}
 
 Server::~Server()
-{}
+{
+    delete m_epoll;
+}
 
 int Server::exec()
 {
-    int status = 0;
-
     SocketTcp socketTcp;
     socketTcp.setup(PORT);
     socketTcp.createSocket();
@@ -36,40 +36,30 @@ int Server::exec()
     socketUdp.setNonBlockingSocket();
     int currentSocketUdp = socketUdp.getSocket();
 
-    Epoll m_epoll(MAX_EVENTS);
-    m_epoll.addEvent(listenSocket);
-    m_epoll.addEvent(currentSocketUdp);
+    m_epoll->addEvent(listenSocket);
+    m_epoll->addEvent(currentSocketUdp);
     
-    std::string message = {};
     while(true)
     {
+
         socketTcp.setSocket(listenSocket);
         
-        int countActivefd = m_epoll.wait();
-
+        int countActivefd = m_epoll->wait();
         for (int activefd = 0; activefd < countActivefd; ++activefd)
         {
-            int fd = m_epoll.getfd(activefd);
+            int fd = m_epoll->getfd(activefd);
             if(fd == listenSocket)
             {
                 int newSocketTcp = socketTcp.accepted(m_client_addr);
                 socketTcp.setSocket(newSocketTcp);
-                if(newSocketTcp < 0)
-                {
-                    std::cout << "accept failed with error " << strerror(errno) << std::endl;
-                    status = EXIT_FAILURE;
-                }
-                else
-                {
-                    socketTcp.setNonBlockingSocket();
-                    m_epoll.addEvent(newSocketTcp);
-                }
+                socketTcp.setNonBlockingSocket();
+                m_epoll->addEvent(newSocketTcp);
             }
             else if(fd == currentSocketUdp)
             {
                 std::cout << "UDP connect" << std::endl;
                 socketUdp.setSocket(fd);
-                message.clear();
+                std::string message = {};
                 message = socketUdp.echo_message();
                 if((message.compare("-exit") != 0) && (!message.empty()))
                 {
@@ -80,7 +70,7 @@ int Server::exec()
             {
                 std::cout << "TCP connect" << std::endl;
                 socketTcp.setSocket(fd);
-                message.clear();
+                std::string message = {};
                 message = socketTcp.echo_message(); 
                 if((message.compare("-exit") != 0) && (!message.empty()))
                 {
@@ -90,6 +80,6 @@ int Server::exec()
         }
     }
 
-    return status;
+    return 0;
 
 }

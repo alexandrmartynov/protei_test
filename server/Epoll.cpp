@@ -33,9 +33,10 @@ void Epoll::addEvent(int fd)
 
 int Epoll::wait() const
 {
-    std::cout << "Waiting connection..." << std::endl;;
-    int countActivefd = epoll_wait(m_epollfd, m_events, m_max_events, -1);
-    if (countActivefd <= -1)
+    std::cout << "Waiting connection..." << std::endl;
+    int timeout = -1;
+    int countActivefd = epoll_wait(m_epollfd, m_events, m_max_events, timeout);
+    if (countActivefd <= timeout)
     {
         std::cout << "epoll_wait failed" << std::endl;
         throw(strerror(errno));

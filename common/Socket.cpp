@@ -14,7 +14,7 @@ void Socket::setSocket(int socket)
     m_socket = socket;
 }
 
-void Socket::closeSocket()
+void Socket::closeSocket() const
 {
     close(m_socket);
 }
@@ -44,15 +44,3 @@ void Socket::setNonBlockingSocket()
         }
     }
 }
-
-std::string Socket::getMessage() const
-{
-    std::string message = {};
-    std::cout << "For disconnect, please write -exit\n";
-    std::cout << "Write message: ";
-    std::cin >> message;
-
-    return message;
-}
-
-

@@ -3,6 +3,7 @@
 
 #include "Socket.h"
 #include "InternetAddress.h"
+#include <string>
 
 class SocketUdp: public Socket
 {
