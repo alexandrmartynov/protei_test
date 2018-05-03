@@ -8,7 +8,7 @@
 Содержит классы для работы с сокетами:
 - InternetAddress - класс содержит базовые настройки интернет-адреса;
 - Socket - базовый класс для сокетов;
-- SocketTcp/ SocketUdp - сокеты TCP и UDP. ;
+- SocketTcp/ SocketUdp - сокеты TCP и UDP;
 
 ## сlient
 
