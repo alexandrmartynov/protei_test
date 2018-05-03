@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     int result = 0;
     if(protocol.empty() || port == 0)
     {
-        std::cerr << "Usage " << argv[0] << " [-t tcp/udp] [-p port]" << std::endl;
+        std::cout << "Usage " << argv[0] << " [-t tcp/udp] [-p port]" << std::endl;
         result = 1;
     }
     else

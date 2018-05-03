@@ -6,7 +6,6 @@ class ClientUdp
 public:
     explicit ClientUdp() = default;
     int exec(int port);
-private:
 };
 
 #endif
