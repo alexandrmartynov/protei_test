@@ -15,7 +15,7 @@ public:
     void setSocket(int socket);
     int getSocket() const;
 protected:
-    virtual void send(const std::string& message) = 0;
+    virtual void send(const std::string& message) const = 0;
     virtual std::string receive() = 0;
 
     static const std::size_t BUFFER_SIZE = 65536;

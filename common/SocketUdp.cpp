@@ -14,7 +14,7 @@ SocketUdp::SocketUdp()
     std::cout << "Create socket UDP" << std::endl;    
 }
 
-void SocketUdp::send(const std::string& message)
+void SocketUdp::send(const std::string& message) const
 {
     std::size_t bytesToWrite = message.size();
     const char* currentPosition = message.c_str();

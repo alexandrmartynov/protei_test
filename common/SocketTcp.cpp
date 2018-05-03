@@ -50,7 +50,7 @@ int SocketTcp::accepted(InternetAddress& addr)
 
 }
 
-void SocketTcp::send(const std::string& message)
+void SocketTcp::send(const std::string& message) const
 {
     std::size_t bytesToWrite = message.size();
     const char* currentPosition = message.c_str();

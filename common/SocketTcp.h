@@ -11,7 +11,7 @@ public:
     void connected() const;
     int accepted(InternetAddress& addr);
 private:
-    virtual void send(const std::string& message) override;
+    virtual void send(const std::string& message) const override;
     virtual std::string receive() override;
 
     static const unsigned int MAX_CLIENT = 1;

@@ -8,7 +8,7 @@ class SocketUdp: public Socket
 public:
     explicit SocketUdp();
 private:
-    virtual void send(const std::string& message) override;
+    virtual void send(const std::string& message) const override;
     virtual std::string receive() override;
 };
 
