@@ -5,10 +5,10 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <typeinfo>
-#include <cerrno>
 
 #define LOCALHOST "127.0.0.1"
 
@@ -31,9 +31,9 @@ void InternetAddress::setup(int port)
     }
 }
 
-void InternetAddress::binded(const int socket)
+void InternetAddress::binded(int socket) const
 {
-    if(bind(socket, reinterpret_cast<sockaddr*>(&m_addr), sizeof(m_addr)) < 0)
+    if(bind(socket, reinterpret_cast<const sockaddr*>(&m_addr), sizeof(m_addr)) < 0)
     {
         std::cout << "Bind failed with error " << strerror(errno) <<  std::endl;
     }

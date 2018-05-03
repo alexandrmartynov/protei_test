@@ -1,4 +1,5 @@
 #include "Socket.h"
+#include "IOService.h"
 
 #include <cerrno>
 #include <cstring>
@@ -6,9 +7,32 @@
 #include <fcntl.h>
 #include <iostream>
 
-Socket::~Socket()
+void Socket::dialog()
 {
-    close(m_socket);
+    std::string message = {};
+    bool exit = false;
+    while(!exit)
+    {
+        message = getMessage();
+        if(message.compare("-exit") == 0)
+        {
+            exit = true;
+        }
+
+        send(message);
+        message = receive();
+        std::cout << "echo: " << message << std::endl;
+
+    } 
+}
+
+std::string Socket::echo()
+{
+    std::string message = {};
+    message = receive();
+    send(message);
+
+    return message;   
 }
 
 int Socket::getSocket() const

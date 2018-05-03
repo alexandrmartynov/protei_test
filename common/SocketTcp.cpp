@@ -1,5 +1,4 @@
 #include "SocketTcp.h"
-#include "IOService.h"
 
 #include <netinet/in.h>
 #include <iostream>
@@ -51,35 +50,7 @@ int SocketTcp::accepted(InternetAddress& addr)
 
 }
 
-void SocketTcp::dialog()
-{
-    std::string message = {};
-    bool exit = false;
-    while(!exit)
-    {
-        message = getMessage();
-        if(message.compare("-exit") == 0)
-        {
-            exit = true;
-        }
-
-        send(message);
-        message = receive();
-        std::cout << "echo: " << message << std::endl;
-
-    } 
-}
-
-std::string SocketTcp::echo()
-{
-    std::string message = {};
-    message = receive();
-    send(message);
-
-    return message;   
-}
-
-void SocketTcp::send(const std::string& message) const
+void SocketTcp::send(const std::string& message)
 {
     std::size_t bytesToWrite = message.size();
     const char* currentPosition = message.c_str();
@@ -113,5 +84,3 @@ std::string SocketTcp::receive()
 
     return message;
 }
-
-

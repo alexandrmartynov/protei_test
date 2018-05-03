@@ -14,6 +14,7 @@ void Parser::start(const std::string& message)
     display();
 
     m_items.sort(std::greater<int>());
+
     std::cout << "Sorted numbers: ";
     display();
     

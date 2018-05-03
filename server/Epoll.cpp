@@ -5,7 +5,6 @@
 #include <cstring>
 #include <unistd.h>
 #include <typeinfo>
-#include <exception>
 
 Epoll::Epoll(unsigned int max_events):
     m_max_events(max_events)
@@ -26,8 +25,7 @@ void Epoll::addEvent(int fd)
     m_event.data.fd = fd;
     if (epoll_ctl(m_epollfd, EPOLL_CTL_ADD, fd, &m_event) == -1)
     {
-       std::cout << "failed epoll_ctl" << std::endl;
-       throw(strerror(errno));
+       std::cout << "failed epoll_ctl with error " << strerror(errno) << std::endl;
     }
 }
 
@@ -46,7 +44,7 @@ int Epoll::wait() const
 
 }
 
-int Epoll::getfd(const int index) const
+int Epoll::getfd(int index) const
 {
     return m_events[index].data.fd;
 }

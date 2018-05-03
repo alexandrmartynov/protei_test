@@ -9,7 +9,7 @@ public:
     explicit InternetAddress() = default;
     InternetAddress(const InternetAddress& obj);
     void setup(int port);
-    void binded(int socket);
+    void binded(int socket) const;
     socklen_t getAddrSize() const;
     sockaddr_in& getAddress();
 private:
