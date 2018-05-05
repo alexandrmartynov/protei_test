@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <algorithm>
+#include <numeric>
 
 void Parser::start(const std::string& message)
 {

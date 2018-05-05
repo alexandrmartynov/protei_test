@@ -13,9 +13,8 @@ public:
     socklen_t getAddrSize() const;
     sockaddr_in& getAddress();
 private:
-
     sockaddr_in m_addr;
+    socklen_t m_addrlen;
 };
 
 #endif
-

@@ -1,6 +1,10 @@
 #include "Server.h"
+#include "Parser.h"
+#include "Epoll.h"
+#include "InternetAddress.h"
 #include "SocketTcp.h"
 #include "SocketUdp.h"
+#include "IOService.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -9,17 +13,10 @@
 
 #define LOCALHOST "127.0.0.1"
 
-Server::Server():
-    m_epoll(new Epoll(MAX_EVENTS))
-{}
-
-Server::~Server()
-{
-    delete m_epoll;
-}
-
 int Server::exec()
 {
+    Epoll epoll(MAX_EVENTS);
+
     SocketTcp socketTcp;
     socketTcp.setupAddress(PORT);
     socketTcp.bindSocket();
@@ -33,50 +30,52 @@ int Server::exec()
     socketUdp.setNonBlockingSocket();
     int currentSocketUdp = socketUdp.getSocket();
 
-    m_epoll->addEvent(listenSocket);
-    m_epoll->addEvent(currentSocketUdp);
+    epoll.addEvent(listenSocket);
+    epoll.addEvent(currentSocketUdp);
     
+    InternetAddress client_addr;
     while(true)
     {
 
         socketTcp.setSocket(listenSocket);
         
-        int countActivefd = m_epoll->wait();
+        int countActivefd = epoll.wait();
         for (int activefd = 0; activefd < countActivefd; ++activefd)
         {
-            int currentfd = m_epoll->getfd(activefd);
+            int currentfd = epoll.getfd(activefd);
             if(currentfd == listenSocket)
             {
-                int newSocketTcp = socketTcp.accepted(m_client_addr);
+                int newSocketTcp = socketTcp.accepted(client_addr);
                 socketTcp.setSocket(newSocketTcp);
                 socketTcp.setNonBlockingSocket();
-                m_epoll->addEvent(newSocketTcp);
+                epoll.addEvent(newSocketTcp);
             }
             else if(currentfd == currentSocketUdp)
             {
                 std::cout << "UDP connect" << std::endl;
-                socketUdp.setSocket(currentfd);
-                std::string message = {};
-                message = socketUdp.echo();
-                if((message.compare("-exit") != 0) && (!message.empty()))
-                {
-                    m_parser.start(message);
-                }
+                handle_message(&socketUdp, currentfd);
             }
             else
             {
                 std::cout << "TCP connect" << std::endl;
-                socketTcp.setSocket(currentfd);
-                std::string message = {};
-                message = socketTcp.echo(); 
-                if((message.compare("-exit") != 0) && (!message.empty()))
-                {
-                    m_parser.start(message);
-                }
+                handle_message(&socketTcp, currentfd);
             }
         }
     }
 
     return 0;
 
+}
+
+void Server::handle_message(Socket* socket, int fd) const
+{
+    Parser parser;
+    IOService service;
+    socket->setSocket(fd);
+    std::string message = {};
+    message = service.echo(socket); 
+    if((message.compare("-exit") != 0) && (!message.empty()))
+    {
+        parser.start(message);
+    }    
 }

@@ -15,7 +15,6 @@ public:
 private:
     int m_epollfd;
     unsigned int m_max_events;    
-    epoll_event m_event;
     epoll_event* m_events;
 };
 

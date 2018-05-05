@@ -7,9 +7,11 @@ class SocketUdp: public Socket
 {
 public:
     explicit SocketUdp();
-private:
+    virtual ~SocketUdp();
     virtual void send(const std::string& message) const override;
     virtual std::string receive() override;
+private:   
+    static const std::size_t BUFFER_SIZE = 65536;
 };
 
 #endif

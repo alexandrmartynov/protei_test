@@ -21,6 +21,7 @@ Epoll::~Epoll()
 
 void Epoll::addEvent(int fd)
 {
+    epoll_event m_event;
     m_event.events = EPOLLIN | EPOLLET;
     m_event.data.fd = fd;
     if (epoll_ctl(m_epollfd, EPOLL_CTL_ADD, fd, &m_event) == -1)
@@ -36,8 +37,7 @@ int Epoll::wait() const
     int countActivefd = epoll_wait(m_epollfd, m_events, m_max_events, timeout);
     if (countActivefd <= timeout)
     {
-        std::cout << "epoll_wait failed" << std::endl;
-        throw(strerror(errno));
+        std::cout << "epoll_wait failed with error " << strerror(errno) << std::endl;
     }
 
     return countActivefd;

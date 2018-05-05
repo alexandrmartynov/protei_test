@@ -19,8 +19,8 @@ InternetAddress::InternetAddress(const InternetAddress& obj)
 
 void InternetAddress::setup(int port)
 {
-    socklen_t addrlen = getAddrSize();
-    std::memset(reinterpret_cast<char*>(&m_addr), 0 , addrlen);
+    m_addrlen = sizeof(m_addr);
+    std::memset(reinterpret_cast<char*>(&m_addr), 0 , m_addrlen);
     m_addr.sin_family = AF_INET;
     m_addr.sin_addr.s_addr = INADDR_ANY;
     m_addr.sin_port = htons(port);
@@ -41,7 +41,7 @@ void InternetAddress::binded(int socket) const
 
 socklen_t InternetAddress::getAddrSize() const
 {
-    return sizeof(m_addr);
+    return m_addrlen;
 }
 
 sockaddr_in& InternetAddress::getAddress()

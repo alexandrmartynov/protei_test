@@ -7,34 +7,6 @@
 #include <fcntl.h>
 #include <iostream>
 
-void Socket::dialog()
-{
-    std::string message = {};
-    bool exit = false;
-    while(!exit)
-    {
-        message = getMessage();
-        if(message.compare("-exit") == 0)
-        {
-            exit = true;
-        }
-
-        send(message);
-        message = receive();
-        std::cout << "echo: " << message << std::endl;
-
-    } 
-}
-
-std::string Socket::echo()
-{
-    std::string message = {};
-    message = receive();
-    send(message);
-
-    return message;   
-}
-
 int Socket::getSocket() const
 {
     return m_socket;
@@ -48,7 +20,6 @@ void Socket::setSocket(int socket)
 void Socket::setupAddress(int port)
 {
     m_addr.setup(port);
-    m_addrlen = sizeof(m_addr);
 }
 
 void Socket::bindSocket()

@@ -14,6 +14,11 @@ SocketTcp::SocketTcp()
     std::cout << "Create socket TCP" << std::endl;
 }
 
+SocketTcp::~SocketTcp()
+{
+    close(m_socket);
+}
+
 void SocketTcp::listening() const
 {
     int connect = listen(m_socket, MAX_CLIENT);
@@ -25,7 +30,7 @@ void SocketTcp::listening() const
 
 void SocketTcp::connected() const
 {
-    int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&m_addr), m_addrlen);
+    int connected = connect(m_socket, reinterpret_cast<const sockaddr*>(&m_addr), sizeof(m_addr));
     if(connected < 0)
     {
         std::cout << "Failed connection with error " << strerror(errno) << std::endl;

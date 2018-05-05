@@ -14,6 +14,11 @@ SocketUdp::SocketUdp()
     std::cout << "Create socket UDP" << std::endl;    
 }
 
+SocketUdp::~SocketUdp()
+{
+    close(m_socket);
+}
+
 void SocketUdp::send(const std::string& message) const
 {
     std::size_t bytesToWrite = message.size();
@@ -26,7 +31,7 @@ void SocketUdp::send(const std::string& message) const
                                           bytesToWrite,
                                           0,
                                           reinterpret_cast<const sockaddr*>(&m_addr),
-                                          m_addrlen
+                                          sizeof(m_addr)
                                          );
         if(bytesWritten <= bytesToWrite)
         {
@@ -38,6 +43,7 @@ void SocketUdp::send(const std::string& message) const
 
 std::string SocketUdp::receive()
 {
+    socklen_t addrlen = m_addr.getAddrSize();
     char buffer[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
     std::size_t bytes = recvfrom(
@@ -46,7 +52,7 @@ std::string SocketUdp::receive()
                                  BUFFER_SIZE,
                                  0,
                                  reinterpret_cast<sockaddr*>(&m_addr),
-                                 &m_addrlen
+                                 &addrlen
                                 );
     std::string message = {};
     if(bytes > 0)
