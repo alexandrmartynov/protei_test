@@ -53,12 +53,12 @@ int Server::exec()
             else if(currentfd == currentSocketUdp)
             {
                 std::cout << "UDP connect" << std::endl;
-                handle_message(&socketUdp, currentfd);
+                handleMessage(&socketUdp, currentfd);
             }
             else
             {
                 std::cout << "TCP connect" << std::endl;
-                handle_message(&socketTcp, currentfd);
+                handleMessage(&socketTcp, currentfd);
             }
         }
     }
@@ -67,7 +67,7 @@ int Server::exec()
 
 }
 
-void Server::handle_message(Socket* socket, int fd) const
+void Server::handleMessage(Socket* socket, int fd) const
 {
     Parser parser;
     IOService service;

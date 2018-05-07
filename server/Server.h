@@ -10,7 +10,7 @@ public:
     ~Server() {};
     int exec();
 private:
-    void handle_message(Socket* socket, int fd) const;
+    void handleMessage(Socket* socket, int fd) const;
 
     static const unsigned int MAX_EVENTS = 10;
     static const unsigned int PORT = 8080;
